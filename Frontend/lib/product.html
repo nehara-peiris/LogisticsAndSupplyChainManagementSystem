@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Products</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-router@3"></script>
+
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header Styles */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+
+        .branding {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 60px;
+            margin-right: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin: 0;
+        }
+
+        /* Button Styles */
+        .actions {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-default {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .btn-default:hover {
+            background-color: #e2e6ea;
+            transform: translateY(-2px);
+        }
+
+        /* Table Styles */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th, .table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
+        }
+
+        /* Typography */
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #777;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .branding {
+                margin-bottom: 15px;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="page-header">
+        <div class="branding">
+            <img src="https://vuejs.org/images/logo.png" alt="Logo" title="Home page" class="logo" />
+            <h1>Vue.js CRUD application</h1>
+        </div>
+    </header>
+    <main id="app">
+        <router-view></router-view>
+    </main>
+</div>
+
+<script type="text/x-template" id="product-list">
+    <div>
+        <div class="actions">
+            <router-link class="btn btn-default" :to="{path: '/add-product'}">
+                <span class="glyphicon glyphicon-plus"></span> Add product
+            </router-link>
+        </div>
+        <div class="filters row">
+            <div class="form-group col-sm-3">
+                <label for="search-element">Product name</label>
+                <input v-model="searchKey" class="form-control" id="search-element" requred/>
+            </div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th class="col-sm-2">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="product in filteredProducts">
+                <td>
+                    <router-link :to="{name: 'product', params: {product_id: product.id}}">{{ product.name }}</router-link>
+                </td>
+                <td>{{ product.description }}</td>
+                <td>
+                    {{ product.price }}
+                    <span class="glyphicon glyphicon-euro" aria-hidden="true"></span>
+                </td>
+                <td>
+                    <router-link class="btn btn-warning btn-xs" :to="{name: 'product-edit', params: {product_id: product.id}}">Edit</router-link>
+                    <router-link class="btn btn-danger btn-xs" :to="{name: 'product-delete', params: {product_id: product.id}}">Delete</router-link>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<script type="text/x-template" id="add-product">
+    <div>
+        <h2>Add new product</h2>
+        <form v-on:submit="createProduct">
+            <div class="form-group">
+                <label for="add-name">Name</label>
+                <input class="form-control" id="add-name" v-model="product.name" required/>
+            </div>
+            <div class="form-group">
+                <label for="add-description">Description</label>
+                <textarea class="form-control" id="add-description" rows="10" v-model="product.description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="add-price">Price,
+                    <span class="glyphicon glyphicon-euro"></span>
+                </label>
+                <input type="number" class="form-control" id="add-price" v-model="product.price" />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+            <router-link to="/" class="btn btn-default">Cancel</router-link>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-template" id="product">
+    <div>
+        <h2>{{ product.name }}</h2>
+        <b>Description:
+        </b>
+        <div>{{ product.description }}</div>
+        <b>Price:</b>
+        <div>{{ product.price }}
+            <span class="glyphicon glyphicon-euro"></span>
+        </div>
+        <br/>
+        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+        <router-link to="/">Back to product list</router-link>
+    </div>
+</script>
+
+<script type="text/x-template" id="product-edit">
+    <div>
+        <h2>Edit product</h2>
+        <form v-on:submit="updateProduct">
+            <div class="form-group">
+                <label for="edit-name">Name</label>
+                <input class="form-control" id="edit-name" v-model="product.name" required/>
+            </div>
+            <div class="form-group">
+                <label for="edit-description">Description</label>
+                <textarea class="form-control" id="edit-description" rows="3" v-model="product.description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-price">Price,
+                    <span class="glyphicon glyphicon-euro"></span>
+                </label>
+                <input type="number" class="form-control" id="edit-price" v-model="product.price" />
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <router-link to="/" class="btn btn-default">Cancel</router-link>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-template" id="product-delete">
+    <div>
+        <h2>Delete product
+            {{ product.name }}</h2>
+        <form v-on:submit="deleteProduct">
+            <p>The action cannot be undone.</p>
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <router-link to="/" class="btn btn-default">Cancel</router-link>
+        </form>
+    </div>
+</script>
+
+<script>
+    var products = [
+        {id: 1, name: 'Angular', description: 'Superheroic JavaScript MVW Framework.', price: 100},
+        {id: 2, name: 'Ember', description: 'A framework for creating ambitious web applications.', price: 100},
+        {id: 3, name: 'React', description: 'A JavaScript Library for building user interfaces.', price: 100},
+        {id: 4, name: 'Vue', description: 'The Progressive JavaScript Framework using MVVM structure', price: 100}
+    ];
+
+    function findProduct (productId) {
+        return products[findProductKey(productId)];
+    };
+
+    function findProductKey (productId) {
+        for (var key = 0; key < products.length; key++) {
+            if (products[key].id == productId) {
+                return key;
+            }
+        }
+    };
+
+    // component --------------------------------------------------------
+    const List = {
+        template: '#product-list',
+        data: function () {
+            return {products: products, searchKey: ''};
+        },
+        computed: {
+            filteredProducts: function () {
+                var self = this;
+                return self.products.filter(function (product) {
+                    return product.name.toLowerCase().indexOf(self.searchKey.toLowerCase()) !== -1
+                })
+            }
+        }
+    };
+
+    const AddProduct = {
+        template: '#add-product',
+        data: function () {
+            return {product: {name: '', description: '', price: ''}
+            }
+        },
+        methods: {
+            createProduct: function() {
+                var product = this.product;
+                products.push({
+                    id: Math.random().toString().split('.')[1],
+                    name: product.name,
+                    description: product.description,
+                    price: product.price
+                });
+                router.push('/');
+            }
+        }
+    };
+
+    const Product = {
+        template: '#product',
+        data: function(){
+            return {product: findProduct(this.$route.params.product_id)};
+        }
+    };
+
+    const ProductEdit = {
+        template: '#product-edit',
+        data: function(){
+            return {product: findProduct(this.$route.params.product_id)};
+        },
+        methods: {
+            updateProduct: function(){
+                var product = this.product;
+                products[findProductKey(product.id)] = {
+                    id: product.id,
+                    name: product.name,
+                    description: product.description,
+                    price: product.price
+                }
+                router.push('/');
+            }
+        }
+    };
+
+    const ProductDelete = {
+        template: '#product-delete',
+        data: function(){
+            return {product: findProduct(this.$route.params.product_id)};
+        },
+        methods: {
+            deleteProduct: function () {
+                products.splice(findProductKey(this.$route.params.product_id), 1);
+                router.push('/');
+            }
+        }
+    }
+
+    // router ------------------------------------------------------------
+    var router = new VueRouter({
+        routes: [
+            { path: '/', component: List },
+            { path: '/product/:product_id', component: Product, name: 'product' },
+            { path: '/add-product', component: AddProduct },
+            { path: '/product/:product_id/edit', component: ProductEdit, name: 'product-edit' },
+            { path: '/product/:product_id/delete', component: ProductDelete, name: 'product-delete' }
+        ]
+    });
+
+    // Vue app -----------------------------------------------------------
+    var app = new Vue({
+        el: '#app',
+        router: router,
+        template: '<router-view></router-view>'
+    });
+
+</script>
+</body>
+</html>
