@@ -1,17 +1,19 @@
 package lk.ijse.backend.service;
 
-import lk.ijse.backend.dto.CategoryDTO;
+
+import lk.ijse.backend.entity.Category;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CategoryService {
-    List<CategoryDTO> getAllCategories();
+    List<Category> getAllCategories();
 
-    CategoryDTO saveCategory(CategoryDTO categoryDTO);
+    Optional<Category> getCategoryById(Long id);
 
-    CategoryDTO updateCategory(CategoryDTO categoryDTO);
+    Category createCategory(Category category);
 
-    String deleteCategory(Long categoryDTO);
+    Category updateCategory(Long id, Category categoryDetails);
 
-    CategoryDTO getCategoryById(Long categoryDTO);
+    void deleteCategory(Long id);
 }
