@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Database Table</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            color: #fff;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .add-button {
+            background-color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .add-button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .actions button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .edit-button {
+            background-color: #ffc107;
+        }
+
+        .edit-button:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .modal input {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal button {
+            margin-top: 10px;
+            width: 48%;
+        }
+
+        .modal button:nth-child(2) {
+            background-color: #6c757d;
+        }
+
+        .modal button:nth-child(2):hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Customer Database</h2>
+    <button class="add-button" onclick="showCustomerPopup()">ADD CUSTOMER</button>
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zip Code</th>
+            <th>Country</th>
+            <th>Contact</th>
+            <th>Registration Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="customer-table"></tbody>
+    </table>
+
+    <div id="customerPopup" class="modal">
+        <h3>Add Customer</h3>
+        <input type="text" id="customerName" placeholder="Name" required />
+        <input type="email" id="customerEmail" placeholder="Email" required />
+        <input type="text" id="customerAddress" placeholder="Address" required />
+        <input type="text" id="customerCity" placeholder="City" required />
+        <input type="text" id="customerState" placeholder="State" required />
+        <input type="text" id="customerZipCode" placeholder="Zip Code" required />
+        <input type="text" id="customerCountry" placeholder="Country" required />
+        <input type="text" id="customerContact" placeholder="Contact" required />
+        <input type="datetime-local" id="customerRegistrationDate" placeholder="Registration Date" required />
+        <button onclick="addCustomer()">Add</button>
+        <button onclick="closeCustomerPopup()">Cancel</button>
+    </div>
+
+    <div id="editCustomerPopup" class="modal">
+        <h3>Edit Customer</h3>
+        <input type="text" id="editCustomerName" placeholder="Name" required />
+        <input type="email" id="editCustomerEmail" placeholder="Email" required />
+        <input type="text" id="editCustomerAddress" placeholder="Address" required />
+        <input type="text" id="editCustomerCity" placeholder="City" required />
+        <input type="text" id="editCustomerState" placeholder="State" required />
+        <input type="text" id="editCustomerZipCode" placeholder="Zip Code" required />
+        <input type="text" id="editCustomerCountry" placeholder="Country" required />
+        <input type="text" id="editCustomerContact" placeholder="Contact" required />
+        <input type="datetime-local" id="editCustomerRegistrationDate" placeholder="Registration Date" required />
+        <button onclick="updateCustomer()">Update</button>
+        <button onclick="closeEditCustomerPopup()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    function showCustomerPopup() {
+        document.getElementById('customerPopup').style.display = 'block';
+    }
+
+    function closeCustomerPopup() {
+        document.getElementById('customerPopup').style.display = 'none';
+    }
+
+    function closeEditCustomerPopup() {
+        document.getElementById('editCustomerPopup').style.display = 'none';
+    }
+
+    const API_BASE_URL = "http://localhost:8082/api/v1/customers";
+
+    document.addEventListener("DOMContentLoaded", loadCustomers);
+
+    async function loadCustomers() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/getAll`);
+            if (!response.ok) throw new Error("Failed to load customers");
+            const customers = await response.json();
+            renderCustomers(customers);
+        } catch (error) {
+            console.error("Error loading customers:", error);
+            alert("Failed to load customers. Check the backend.");
+        }
+    }
+
+    function renderCustomers(customers) {
+        let table = document.getElementById('customer-table');
+        table.innerHTML = "";
+
+        customers.forEach(customer => {
+            let row = table.insertRow();
+            row.insertCell(0).innerText = customer.name;
+            row.insertCell(1).innerText = customer.email;
+            row.insertCell(2).innerText = customer.address;
+            row.insertCell(3).innerText = customer.city;
+            row.insertCell(4).innerText = customer.state;
+            row.insertCell(5).innerText = customer.zipCode;
+            row.insertCell(6).innerText = customer.country;
+            row.insertCell(7).innerText = customer.contact;
+            row.insertCell(8).innerText = customer.registrationDate;
+            row.insertCell(9).innerHTML = `
+            <div class="actions">
+                <button class='edit-button' onclick="editCustomerRow(this, ${customer.id})">EDIT</button>
+                <button class='delete-button' onclick="deleteCustomer(${customer.id})">DELETE</button>
+            </div>`;
+        });
+    }
+
+    async function addCustomer() {
+        const customer = {
+            name: document.getElementById('customerName').value,
+            email: document.getElementById('customerEmail').value,
+            address: document.getElementById('customerAddress').value,
+            city: document.getElementById('customerCity').value,
+            state: document.getElementById('customerState').value,
+            zipCode: document.getElementById('customerZipCode').value,
+            country: document.getElementById('customerCountry').value,
+            contact: document.getElementById('customerContact').value,
+            registrationDate: document.getElementById('customerRegistrationDate').value
+        };
+
+        const response = await fetch(`${API_BASE_URL}/save`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(customer)
+        });
+
+        if (response.ok) {
+            closeCustomerPopup();
+            loadCustomers();
+        } else {
+            alert("Failed to add customer.");
+        }
+    }
+
+    function editCustomerRow(button, id) {
+        const row = button.parentElement.parentElement;
+        document.getElementById('editCustomerName').value = row.cells[0].innerText;
+        document.getElementById('editCustomerEmail').value = row.cells[1].innerText;
+        document.getElementById('editCustomerAddress').value = row.cells[2].innerText;
+        document.getElementById('editCustomerCity').value = row.cells[3].innerText;
+        document.getElementById('editCustomerState').value = row.cells[4].innerText;
+        document.getElementById('editCustomerZipCode').value = row.cells[5].innerText;
+        document.getElementById('editCustomerCountry').value = row.cells[6].innerText;
+        document.getElementById('editCustomerContact').value = row.cells[7].innerText;
+        document.getElementById('editCustomerRegistrationDate').value = row.cells[8].innerText;
+        document.getElementById('editCustomerPopup').setAttribute('data-id', id);
+        document.getElementById('editCustomerPopup').style.display = 'block';
+    }
+
+    async function updateCustomer() {
+        const id = document.getElementById('editCustomerPopup').getAttribute('data-id');
+        const customer = {
+            name: document.getElementById('editCustomerName').value,
+            email: document.getElementById('editCustomerEmail').value,
+            address: document.getElementById('editCustomerAddress').value,
+            city: document.getElementById('editCustomerCity').value,
+            state: document.getElementById('editCustomerState').value,
+            zipCode: document.getElementById('editCustomerZipCode').value,
+            country: document.getElementById('editCustomerCountry').value,
+            contact: document.getElementById('editCustomerContact').value,
+            registrationDate: document.getElementById('editCustomerRegistrationDate').value
+        };
+
+        const response = await fetch(`${API_BASE_URL}/update/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(customer)
+        });
+
+        if (response.ok) {
+            closeEditCustomerPopup();
+            loadCustomers();
+        } else {
+            alert("Failed to update customer.");
+        }
+    }
+
+    async function deleteCustomer(id) {
+        if (!confirm('Are you sure you want to delete this customer?')) return;
+
+        const response = await fetch(`${API_BASE_URL}/delete/${id}`, { method: "DELETE" });
+
+        if (response.ok) {
+            loadCustomers();
+        } else {
+            alert("Failed to delete customer.");
+        }
+    }
+
+</script>
+</body>
+</html>

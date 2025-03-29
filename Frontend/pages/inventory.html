@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Database Table</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background-color: #d4e5d4; }
+        .actions button { margin: 0 5px; padding: 5px 10px; border: none; cursor: pointer; }
+        .add-button { background-color: #90ee90; margin-bottom: 10px; padding: 8px 12px; cursor: pointer; }
+        .edit-button { background-color: #f4d03f; }
+        .delete-button { background-color: #f08080; }
+        #popupForm, #editPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        #popupForm input, #editPopup input { display: block; margin: 10px 0; padding: 8px; width: 90%; }
+        #popupForm button, #editPopup button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+<h2>Inventory Database</h2>
+<button class="add-button" onclick="showPopup()">ADD INVENTORY</button>
+<table>
+    <thead>
+    <tr>
+        <th>Stock Level</th><th>Last Updated</th><th>Product ID</th><th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="inventory-table"></tbody>
+</table>
+
+<div id="popupForm">
+    <h3>Add Inventory</h3>
+    <input type="number" id="stockLevel" placeholder="Stock Level" />
+    <input type="datetime-local" id="lastUpdated" placeholder="Last Updated" />
+    <input type="text" id="productId" placeholder="Product ID" />
+    <button onclick="addInventory()">Add</button>
+    <button onclick="closePopup()">Cancel</button>
+</div>
+
+<div id="editPopup">
+    <h3>Edit Inventory</h3>
+    <input type="number" id="editStockLevel" placeholder="Stock Level" />
+    <input type="datetime-local" id="editLastUpdated" placeholder="Last Updated" />
+    <input type="text" id="editProductId" placeholder="Product ID" />
+    <button onclick="updateInventory()">Update</button>
+    <button onclick="closeEditPopup()">Cancel</button>
+</div>
+
+<script>
+    let editRowElement;
+
+    function showPopup() { document.getElementById('popupForm').style.display = 'block'; }
+    function closePopup() { document.getElementById('popupForm').style.display = 'none'; }
+    function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
+
+    function addInventory() {
+        let table = document.getElementById('inventory-table');
+        let row = table.insertRow();
+        row.insertCell(0).innerText = document.getElementById('stockLevel').value;
+        row.insertCell(1).innerText = document.getElementById('lastUpdated').value;
+        row.insertCell(2).innerText = document.getElementById('productId').value;
+        row.insertCell(3).innerHTML = `<button class='edit-button' onclick="editRow(this)">EDIT</button><button class='delete-button' onclick="confirmDelete(this)">DELETE</button>`;
+        closePopup();
+    }
+
+    function confirmDelete(button) {
+        if (confirm('Are you sure you want to delete this inventory item?')) {
+            button.parentElement.parentElement.remove();
+        }
+    }
+
+    function editRow(button) {
+        editRowElement = button.parentElement.parentElement;
+        document.getElementById('editStockLevel').value = editRowElement.cells[0].innerText;
+        document.getElementById('editLastUpdated').value = editRowElement.cells[1].innerText;
+        document.getElementById('editProductId').value = editRowElement.cells[2].innerText;
+        document.getElementById('editPopup').style.display = 'block';
+    }
+
+    function updateInventory() {
+        editRowElement.cells[0].innerText = document.getElementById('editStockLevel').value;
+        editRowElement.cells[1].innerText = document.getElementById('editLastUpdated').value;
+        editRowElement.cells[2].innerText = document.getElementById('editProductId').value;
+        closeEditPopup();
+    }
+</script>
+</body>
+</html>
