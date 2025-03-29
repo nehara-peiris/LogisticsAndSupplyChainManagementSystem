@@ -1,21 +1,30 @@
 package lk.ijse.backend.service.impl;
 
+import lk.ijse.backend.entity.Category;
 import lk.ijse.backend.entity.Customer;
 import lk.ijse.backend.repo.CustomerRepository;
+import lk.ijse.backend.service.CustomerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CustomerServiceImpl {
+@Transactional
+public class CustomerServiceImpl implements CustomerService {
+    private static final Logger logger = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
     @Autowired
     private CustomerRepository customerRepository;
 
     public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+        List<Customer> customers = customerRepository.findAll();
+        logger.info("Fetched customers: {}", customers);
+        return customers;
     }
 
     public Optional<Customer> getCustomerById(Long id) {

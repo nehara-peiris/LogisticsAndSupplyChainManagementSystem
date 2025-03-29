@@ -1,6 +1,6 @@
 $('#user-dashboard').on('click',function () { 
     $.ajax({
-        url:`http://localhost:8080/api/v1/admin/test1`,
+        url:`http://localhost:8082/api/v1/admin/test1`,
         method:`GET`,
         headers:{
             "Authorization": "Bearer " + localStorage.getItem("authToken"),
@@ -18,7 +18,7 @@ $('#user-dashboard').on('click',function () {
 })
 $('#admin-dashboard').on('click',function () { 
     $.ajax({
-        url:`http://localhost:8080/api/v1/admin/test2`,
+        url:`http://localhost:8082/api/v1/admin/test2`,
         method:`GET`,
         headers:{
             "Authorization": "Bearer " + localStorage.getItem("authToken"),

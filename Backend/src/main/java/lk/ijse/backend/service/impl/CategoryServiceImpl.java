@@ -3,6 +3,8 @@ package lk.ijse.backend.service.impl;
 import lk.ijse.backend.entity.Category;
 import lk.ijse.backend.repo.CategoryRepository;
 import lk.ijse.backend.service.CategoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,15 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 @Transactional
 public class CategoryServiceImpl implements CategoryService {
+    private static final Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
+
     @Autowired
     private CategoryRepository categoryRepository;
 
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findAll();
+        logger.info("Fetched categories: {}", categories);  // Log result
+        return categories;
     }
 
     public Optional<Category> getCategoryById(Long id) {
