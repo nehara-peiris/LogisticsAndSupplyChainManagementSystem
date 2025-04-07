@@ -48,3 +48,17 @@ Make sure the following tools are installed:
    ```bash
    git clone https://github.com/your-username/logistics-system.git](https://github.com/nehara-peiris/LogisticsAndSupplyChainManagementSystem.git
    cd logistics-system/backend
+
+
+
+---
+
+## 🎬 Demo Video
+
+Watch the system in action:  
+👉 **LogisticsSystem_Demo_YourName_StudentID.mp4**
+
+> **Note:** Make sure your demo video is named using the format:  
+> **LogisticsSystem_Demo_YourName_StudentID.mp4**
+   
+   
