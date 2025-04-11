@@ -1,6 +1,5 @@
 package lk.ijse.backend.service.impl;
 
-import lk.ijse.backend.entity.Category;
 import lk.ijse.backend.entity.Product;
 import lk.ijse.backend.repo.ProductRepository;
 import lk.ijse.backend.service.ProductService;

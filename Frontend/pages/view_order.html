@@ -30,31 +30,19 @@
 </table>
 
 <script>
-    const apiBaseUrl = "http://localhost:8082/api/v1/orders";
+    const API_URL = "http://localhost:8082/api/v1/orders";
 
     async function loadOrders() {
         try {
-            const response = await fetch(`${apiBaseUrl}/getAll`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add authentication if needed:
-                    // 'Authorization': 'Bearer your_token_here'
-                }
-            });
-
+            const response = await fetch(API_URL);
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(
-                    `Failed to load orders: ${response.status} ${response.statusText}\n` +
-                    (errorData.message || '')
-                );
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-
             const orders = await response.json();
             renderOrders(orders);
         } catch (error) {
             console.error("Error loading orders:", error);
-            alert(`Error loading orders: ${error.message}`);
+            alert("Failed to load orders. Check console for details.");
         }
     }
 
@@ -63,58 +51,62 @@
         table.innerHTML = "";
 
         orders.forEach(order => {
-            let row = table.insertRow();
-            row.insertCell(0).textContent = order.id;
-            row.insertCell(1).textContent = order.customer?.name || 'N/A';
-            row.insertCell(2).textContent = new Date(order.orderDate).toLocaleDateString();
-            row.insertCell(3).textContent = `$${order.totalAmount?.toFixed(2) || '0.00'}`;
+            const row = table.insertRow();
 
-            // Status dropdown
-            let statusCell = row.insertCell(4);
-            let statusSelect = document.createElement("select");
-            ["Pending", "Processing", "Shipped", "Delivered"].forEach(status => {
-                let option = new Option(status, status);
-                option.selected = order.status === status;
+            // Order ID
+            row.insertCell(0).textContent = order.id || 'N/A';
+
+            row.insertCell(1).textContent = order.customer?.name || 'N/A';
+
+            // Order Date
+            const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A';
+            row.insertCell(2).textContent = orderDate;
+
+            // Total Amount
+            row.insertCell(3).textContent = order.totalAmount ? `$${order.totalAmount.toFixed(2)}` : '$0.00';
+
+            // Status (with dropdown)
+            const statusCell = row.insertCell(4);
+            const statusSelect = document.createElement('select');
+            ['PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED'].forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                if (order.status === status) option.selected = true;
                 statusSelect.appendChild(option);
             });
             statusCell.appendChild(statusSelect);
 
-            // Update button
-            let actionCell = row.insertCell(5);
-            let updateButton = document.createElement("button");
-            updateButton.className = "update-button";
-            updateButton.textContent = "Update";
-            updateButton.onclick = () => updateOrderStatus(order.id, statusSelect.value);
-            actionCell.appendChild(updateButton);
+            // Action button
+            const actionCell = row.insertCell(5);
+            const updateBtn = document.createElement('button');
+            updateBtn.className = 'update-button';
+            updateBtn.textContent = 'Update';
+            updateBtn.onclick = () => updateOrderStatus(order.id, statusSelect.value);
+            actionCell.appendChild(updateBtn);
         });
     }
 
     async function updateOrderStatus(orderId, newStatus) {
         try {
-            const response = await fetch(`${apiBaseUrl}/updateStatus/${orderId}`, {
-                method: "PUT",
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add authentication if needed:
-                    // 'Authorization': 'Bearer your_token_here'
-                },
+            const response = await fetch(`${API_URL}/${orderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to update status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error('Failed to update status');
 
-            // Refresh the orders list
-            await loadOrders();
+            alert('Status updated successfully');
+            loadOrders(); // Refresh the table
         } catch (error) {
-            console.error("Error updating order status:", error);
-            alert(`Failed to update status: ${error.message}`);
+            console.error('Error updating status:', error);
+            alert('Failed to update status');
         }
     }
 
-    // Initialize when DOM is loaded
-    document.addEventListener("DOMContentLoaded", loadOrders);
+    // Load orders when page loads
+    document.addEventListener('DOMContentLoaded', loadOrders);
 </script>
 </body>
 </html>

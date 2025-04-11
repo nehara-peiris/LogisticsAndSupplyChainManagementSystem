@@ -74,30 +74,5 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
-    @Override
-    public Orders updateOrderStatus(Long orderId, String status) {
-        Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        order.setStatus(status);
-        return orderRepository.save(order);
-    }
-
-    @Override
-    public List<Orders> getOrdersByCustomer(Long customerId) {
-        return orderRepository.findByCustomerId(customerId);
-    }
-
-    @Override
-    public List<Orders> getOrdersByStatus(String status) {
-        return orderRepository.findByStatus(status);
-    }
-
-    @Override
-    public void cancelOrder(Long orderId) {
-        Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        order.setStatus("CANCELLED");
-        orderRepository.save(order);
-    }
 
 }
