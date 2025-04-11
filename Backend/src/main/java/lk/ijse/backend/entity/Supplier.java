@@ -24,7 +24,4 @@ public class Supplier {
     private String address;
     private LocalDateTime registrationDate;
 
-    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
-    private List<PurchaseOrder> purchaseOrders;
-
 }

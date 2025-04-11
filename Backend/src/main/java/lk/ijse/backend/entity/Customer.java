@@ -1,13 +1,14 @@
 package lk.ijse.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
@@ -29,9 +30,10 @@ public class Customer {
     private LocalDateTime registrationDate;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Orders> orders;
-}
 
-// https://codepen.io/AdrianBL/pen/LYoyjRP
+
+}
 
 

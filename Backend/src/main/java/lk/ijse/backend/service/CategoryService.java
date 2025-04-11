@@ -1,6 +1,5 @@
 package lk.ijse.backend.service;
 
-
 import lk.ijse.backend.entity.Category;
 
 import java.util.List;

@@ -1,18 +1,16 @@
 package lk.ijse.backend.service;
 
+import lk.ijse.backend.dto.OrderDTO;
 import lk.ijse.backend.entity.Orders;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface OrderService {
+    Orders placeOrder(OrderDTO orderDTO);
     List<Orders> getAllOrders();
-
-    Optional<Orders> getOrderById(Long id);
-
-    Orders createOrder(Orders order);
-
-    Orders updateOrder(Long id, Orders orderDetails);
-
-    void deleteOrder(Long id);
+    Orders getOrderById(Long id);
+    Orders updateOrderStatus(Long orderId, String status);
+    List<Orders> getOrdersByCustomer(Long customerId);
+    List<Orders> getOrdersByStatus(String status);
+    void cancelOrder(Long orderId);
 }

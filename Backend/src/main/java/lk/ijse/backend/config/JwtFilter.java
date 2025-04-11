@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -69,4 +71,17 @@ public class JwtFilter extends OncePerRequestFilter {
         return Jwts.parser().setSigningKey(secretKey.getBytes()).parseClaimsJws(token).getBody();
     }
 
+    private static final List<String> PUBLIC_ENDPOINTS = Arrays.asList(
+            "/api/v1/auth/authenticate",
+            "/api/v1/user/register",
+            "/api/v1/auth/refreshToken",
+            "/api/v1/categories",
+            "/api/v1/products",
+            "/api/v1/orders",
+            "/api/v1/customers"
+    );
+
+    private boolean isPublicEndpoint(String path) {
+        return PUBLIC_ENDPOINTS.stream().anyMatch(path::startsWith);
+    }
 }

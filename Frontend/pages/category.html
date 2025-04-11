@@ -7,42 +7,46 @@
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f7;
+            padding: 30px;
+            color: #333;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
 
         h2 {
             text-align: center;
-            color: #333;
+            color: #2c3e50;
+            margin-bottom: 25px;
         }
 
         button {
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
+            border-radius: 6px;
+            padding: 10px 16px;
             color: #fff;
             font-size: 16px;
-            transition: background 0.3s;
+            transition: background-color 0.3s ease;
         }
 
         .add-button {
             background-color: #28a745;
             margin-bottom: 20px;
+            font-weight: 600;
         }
 
         .add-button:hover {
@@ -53,27 +57,37 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
+            border: 1px solid #dee2e6;
+            padding: 12px;
             text-align: center;
         }
 
         th {
             background-color: #007bff;
             color: white;
+            font-weight: 600;
+        }
+
+        td {
+            background-color: #ffffff;
         }
 
         .actions button {
-            margin: 0 5px;
-            padding: 5px 10px;
+            margin: 0 4px;
+            padding: 6px 12px;
             border-radius: 5px;
+            font-size: 14px;
         }
 
         .edit-button {
             background-color: #ffc107;
+            color: #212529;
         }
 
         .edit-button:hover {
@@ -94,35 +108,56 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
+            background-color: #fff;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 999;
+            width: 350px;
+        }
+
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #333;
         }
 
         .modal input {
-            display: block;
-            margin: 10px 0;
-            padding: 10px;
             width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 6px;
         }
 
         .modal button {
-            margin-top: 10px;
             width: 48%;
+            margin-top: 10px;
+            font-weight: 500;
         }
 
-        .modal button:nth-child(2) {
+        .modal button:nth-child(4) {
             background-color: #6c757d;
         }
 
-        .modal button:nth-child(2):hover {
+        .modal button:nth-child(4):hover {
             background-color: #5a6268;
         }
+
+        a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .container > button:last-of-type {
+            background-color: #17a2b8;
+            margin-top: 10px;
+        }
+
+        .container > button:last-of-type:hover {
+            background-color: #138496;
+        }
     </style>
+
 </head>
 <body>
 <div class="container">
@@ -136,14 +171,14 @@
             <th>Actions</th>
         </tr>
         </thead>
-        <tbody id="product-table"></tbody>
+        <tbody id="category-table"></tbody>
     </table>
 
     <div id="popupForm" class="modal">
         <h3>Add Category</h3>
         <input type="text" id="categoryName" placeholder="Category Name" required />
         <input type="text" id="description" placeholder="Description" required />
-        <button onclick="addProduct()">Add</button>
+        <button onclick="addCategory()">Add</button>
         <button onclick="closePopup()">Cancel</button>
     </div>
 
@@ -151,9 +186,12 @@
         <h3>Edit Category</h3>
         <input type="text" id="editCategoryName" placeholder="Category Name" required />
         <input type="text" id="editDescription" placeholder="Description" required />
-        <button onclick="updateProduct()">Update</button>
+        <button onclick="updateCategory()">Update</button>
         <button onclick="closeEditPopup()">Cancel</button>
     </div>
+
+    <button><a href="../adminDashboard.html">Back to dashboard</a></button>
+
 </div>
 
 <script>
@@ -186,7 +224,7 @@
     }
 
     function renderCategories(categories) {
-        let table = document.getElementById('product-table');
+        let table = document.getElementById('category-table');
         table.innerHTML = "";
 
         categories.forEach(category => {
@@ -201,7 +239,7 @@
         });
     }
 
-    async function addProduct() {
+    async function addCategory() {
         const categoryName = document.getElementById('categoryName').value;
         const description = document.getElementById('description').value;
 
@@ -230,7 +268,7 @@
         document.getElementById('editPopup').style.display = 'block';
     }
 
-    async function updateProduct() {
+    async function updateCategory() {
         const id = document.getElementById('editPopup').getAttribute('data-id');
         const categoryName = document.getElementById('editCategoryName').value;
         const description = document.getElementById('editDescription').value;
@@ -242,9 +280,12 @@
 
         const response = await fetch(`${API_BASE_URL}/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ name: categoryName, description })
         });
+
 
         if (response.ok) {
             closeEditPopup();

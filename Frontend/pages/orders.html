@@ -3,97 +3,486 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders Database Table</title>
+    <title>Order Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        th { background-color: #d4e5d4; }
-        .actions button { margin: 0 5px; padding: 5px 10px; border: none; cursor: pointer; }
-        .add-button { background-color: #90ee90; margin-bottom: 10px; padding: 8px 12px; cursor: pointer; }
-        .edit-button { background-color: #f4d03f; }
-        .delete-button { background-color: #f08080; }
-        #popupForm, #editPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        #popupForm input, #editPopup input { display: block; margin: 10px 0; padding: 8px; width: 90%; }
-        #popupForm button, #editPopup button { margin-top: 10px; }
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            border-radius: 0.375rem 0.375rem 0 0 !important;
+        }
+
+        .btn {
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        #cartTable tfoot {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .quantity-input {
+            width: 70px;
+            text-align: center;
+        }
+
+        .search-box {
+            width: 300px;
+        }
+
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .table th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 10;
+        }
+
+        .add-to-cart-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Animation for added items */
+        @keyframes addedToCart {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .added-to-cart {
+            animation: addedToCart 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body>
-<h2>Orders Database</h2>
-<button class="add-button" onclick="showPopup()">ADD ORDER</button>
-<table>
-    <thead>
-    <tr>
-        <th>Order Date</th>
-        <th>Total Amount</th>
-        <th>Customer ID</th>
-        <th>Order Items</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody id="orders-table"></tbody>
-</table>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Order Management System</h1>
 
-<div id="popupForm">
-    <h3>Add Order</h3>
-    <input type="date" id="orderDate" placeholder="Order Date" />
-    <input type="number" step="0.01" id="totalAmount" placeholder="Total Amount" />
-    <input type="text" id="customerId" placeholder="Customer ID" />
-    <input type="text" id="orderItems" placeholder="Order Items (comma-separated)" />
-    <button onclick="addOrder()">Add</button>
-    <button onclick="closePopup()">Cancel</button>
-</div>
+    <div class="row">
+        <!-- Product Selection -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Products</h3>
+                    <div class="search-box">
+                        <div class="input-group">
+                            <input type="text" id="productSearch" class="form-control" placeholder="Search by name or ID...">
+                            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="productTable">
+                            <!-- Products will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<div id="editPopup">
-    <h3>Edit Order</h3>
-    <input type="date" id="editOrderDate" placeholder="Order Date" />
-    <input type="number" step="0.01" id="editTotalAmount" placeholder="Total Amount" />
-    <input type="text" id="editCustomerId" placeholder="Customer ID" />
-    <input type="text" id="editOrderItems" placeholder="Order Items (comma-separated)" />
-    <button onclick="updateOrder()">Update</button>
-    <button onclick="closeEditPopup()">Cancel</button>
+        <!-- Shopping Cart -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Shopping Cart</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="customerSelect" class="form-label">Customer</label>
+                        <div class="input-group">
+                            <input type="text" id="customerSearch" class="form-control" placeholder="Search by name or ID...">
+                            <button class="btn btn-outline-secondary" type="button" id="customerSearchBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <select id="customerSelect" class="form-select mt-2">
+                            <option value="">Select a customer</option>
+                            <!-- Customers will be loaded here -->
+                        </select>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="cartTable">
+                            <!-- Cart items will be shown here -->
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <th colspan="3">Total Amount</th>
+                                <th id="totalAmount">0.00</th>
+                                <th></th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <button id="checkoutBtn" class="btn btn-success w-100 mt-3">
+                        <i class="bi bi-cart-check"></i> Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    let editRowElement;
+    document.addEventListener('DOMContentLoaded', function () {
+        // DOM Elements
+        const productTable = document.getElementById('productTable');
+        const cartTable = document.getElementById('cartTable');
+        const customerSelect = document.getElementById('customerSelect');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const totalAmountElement = document.getElementById('totalAmount');
+        const productSearch = document.getElementById('productSearch');
+        const searchBtn = document.getElementById('searchBtn');
+        const customerSearch = document.getElementById('customerSearch');
+        const customerSearchBtn = document.getElementById('customerSearchBtn');
 
-    function showPopup() { document.getElementById('popupForm').style.display = 'block'; }
-    function closePopup() { document.getElementById('popupForm').style.display = 'none'; }
-    function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
+        // State
+        let products = [];
+        let customers = [];
+        let cart = [];
+        let filteredProducts = [];
+        let filteredCustomers = [];
 
-    function addOrder() {
-        let table = document.getElementById('orders-table');
-        let row = table.insertRow();
-        row.insertCell(0).innerText = document.getElementById('orderDate').value;
-        row.insertCell(1).innerText = document.getElementById('totalAmount').value;
-        row.insertCell(2).innerText = document.getElementById('customerId').value;
-        row.insertCell(3).innerText = document.getElementById('orderItems').value;
-        row.insertCell(4).innerHTML = `<button class='edit-button' onclick="editRow(this)">EDIT</button><button class='delete-button' onclick="confirmDelete(this)">DELETE</button>`;
-        closePopup();
-    }
-
-    function confirmDelete(button) {
-        if (confirm('Are you sure you want to delete this order?')) {
-            button.parentElement.parentElement.remove();
+        // Initialize the app
+        async function init() {
+            await fetchProducts();
+            await fetchCustomers();
+            filteredProducts = [...products];
+            filteredCustomers = [...customers];
+            renderProducts();
+            renderCustomers();
+            renderCart();
         }
-    }
 
-    function editRow(button) {
-        editRowElement = button.parentElement.parentElement;
-        document.getElementById('editOrderDate').value = editRowElement.cells[0].innerText;
-        document.getElementById('editTotalAmount').value = editRowElement.cells[1].innerText;
-        document.getElementById('editCustomerId').value = editRowElement.cells[2].innerText;
-        document.getElementById('editOrderItems').value = editRowElement.cells[3].innerText;
-        document.getElementById('editPopup').style.display = 'block';
-    }
+        // Fetch products from backend
+        async function fetchProducts() {
+            try {
+                const response = await fetch('http://localhost:8082/api/v1/products/getAll');
+                products = await response.json();
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
 
-    function updateOrder() {
-        editRowElement.cells[0].innerText = document.getElementById('editOrderDate').value;
-        editRowElement.cells[1].innerText = document.getElementById('editTotalAmount').value;
-        editRowElement.cells[2].innerText = document.getElementById('editCustomerId').value;
-        editRowElement.cells[3].innerText = document.getElementById('editOrderItems').value;
-        closeEditPopup();
-    }
+        // Fetch customers from backend
+        async function fetchCustomers() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('http://localhost:8082/api/v1/customers/getAll');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                customers = await response.json();
+                console.log("Customers fetched successfully:", customers);
+            } catch (error) {
+                console.error('Error fetching customers:', error);
+                alert('Failed to load customers. Please check console for details.');
+            }
+        }
+
+
+        // Filter products based on search term
+        function filterProducts(searchTerm) {
+            if (!searchTerm) {
+                filteredProducts = [...products];
+                return;
+            }
+
+            const term = searchTerm.toLowerCase();
+            filteredProducts = products.filter(product =>
+                product.name.toLowerCase().includes(term) ||
+                product.id.toString().includes(term)
+            );
+        }
+
+        // Filter customers based on search term
+        function filterCustomers(searchTerm) {
+            if (!searchTerm) {
+                filteredCustomers = [...customers];
+                return;
+            }
+
+            const term = searchTerm.toLowerCase();
+            filteredCustomers = customers.filter(customer =>
+                customer.name.toLowerCase().includes(term) ||
+                customer.id.toString().includes(term)
+            );
+        }
+
+        // Render products table
+        function renderProducts() {
+            productTable.innerHTML = '';
+
+            if (filteredProducts.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="5" class="text-center">No products found</td>`;
+                productTable.appendChild(row);
+                return;
+            }
+
+            filteredProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>$${product.price.toFixed(2)}</td>
+                <td><input type="number" class="form-control quantity-input" value="1" min="1" data-product-id="${product.id}"></td>
+                <td><button class="btn btn-sm btn-primary add-to-cart-btn" data-product-id="${product.id}">
+                    <i class="bi bi-cart-plus"></i> Add
+                </button></td>
+            `;
+                productTable.appendChild(row);
+            });
+        }
+
+        // Render customers dropdown
+        function renderCustomers() {
+            customerSelect.innerHTML = '<option value="">Select a customer</option>';
+            filteredCustomers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = `${customer.name} (${customer.email})`;
+                customerSelect.appendChild(option);
+            });
+        }
+
+        // Render cart table
+        function renderCart() {
+            cartTable.innerHTML = '';
+            let totalAmount = 0;
+
+            if (cart.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="5" class="text-center">Your cart is empty</td>`;
+                cartTable.appendChild(row);
+                totalAmountElement.textContent = `$0.00`;
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                const row = document.createElement('tr');
+                const itemTotal = item.price * item.quantity;
+                totalAmount += itemTotal;
+
+                row.innerHTML = `
+                <td>${item.productName} (ID: ${item.productId})</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary decrement" data-index="${index}">-</button>
+                        <span class="mx-2">${item.quantity}</span>
+                        <button class="btn btn-sm btn-outline-secondary increment" data-index="${index}">+</button>
+                    </div>
+                </td>
+                <td>$${item.price.toFixed(2)}</td>
+                <td>$${itemTotal.toFixed(2)}</td>
+                <td><button class="btn btn-sm btn-danger remove-item" data-index="${index}">
+                    <i class="bi bi-trash"></i>
+                </button></td>
+            `;
+                cartTable.appendChild(row);
+            });
+
+            totalAmountElement.textContent = `$${totalAmount.toFixed(2)}`;
+        }
+
+        // Add product to cart
+        function addToCart(productId, quantity) {
+            const product = products.find(p => p.id === productId);
+
+            if (product && quantity > 0) {
+                const existingItemIndex = cart.findIndex(item => item.productId === productId);
+
+                if (existingItemIndex >= 0) {
+                    cart[existingItemIndex].quantity += quantity;
+                } else {
+                    cart.push({
+                        productId: product.id,
+                        productName: product.name,
+                        price: product.price,
+                        quantity: quantity
+                    });
+                }
+
+                const button = document.querySelector(`.add-to-cart-btn[data-product-id="${productId}"]`);
+                if (button) {
+                    button.classList.add('added-to-cart');
+                    setTimeout(() => button.classList.remove('added-to-cart'), 500);
+                }
+
+                renderCart();
+            }
+        }
+
+        // Event listeners for product table
+        productTable.addEventListener('click', function (e) {
+            if (e.target.classList.contains('add-to-cart-btn') ||
+                e.target.closest('.add-to-cart-btn')) {
+                const button = e.target.classList.contains('add-to-cart-btn') ?
+                    e.target : e.target.closest('.add-to-cart-btn');
+                const productId = parseInt(button.dataset.productId);
+                const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+                const quantity = parseInt(quantityInput.value);
+
+                addToCart(productId, quantity);
+            }
+        });
+
+        // Product search
+        searchBtn.addEventListener('click', function () {
+            filterProducts(productSearch.value);
+            renderProducts();
+        });
+
+        productSearch.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                filterProducts(productSearch.value);
+                renderProducts();
+            }
+        });
+
+        // Customer search
+        customerSearchBtn.addEventListener('click', function () {
+            filterCustomers(customerSearch.value);
+            renderCustomers();
+        });
+
+        customerSearch.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                filterCustomers(customerSearch.value);
+                renderCustomers();
+            }
+        });
+
+        // Cart quantity change and removal
+        cartTable.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-item') ||
+                e.target.closest('.remove-item')) {
+                const button = e.target.classList.contains('remove-item') ?
+                    e.target : e.target.closest('.remove-item');
+                const index = parseInt(button.dataset.index);
+                cart.splice(index, 1);
+                renderCart();
+            }
+
+            if (e.target.classList.contains('increment') ||
+                e.target.closest('.increment')) {
+                const button = e.target.classList.contains('increment') ?
+                    e.target : e.target.closest('.increment');
+                const index = parseInt(button.dataset.index);
+                cart[index].quantity += 1;
+                renderCart();
+            }
+
+            if (e.target.classList.contains('decrement') ||
+                e.target.closest('.decrement')) {
+                const button = e.target.classList.contains('decrement') ?
+                    e.target : e.target.closest('.decrement');
+                const index = parseInt(button.dataset.index);
+                if (cart[index].quantity > 1) {
+                    cart[index].quantity -= 1;
+                    renderCart();
+                }
+            }
+        });
+
+        // Checkout logic
+        checkoutBtn.addEventListener('click', async function () {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+
+            const customerId = parseInt(customerSelect.value);
+            if (!customerId) {
+                alert('Please select a customer');
+                return;
+            }
+
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            const orderDTO = {
+                customerId: customerId,
+                totalAmount: totalAmount,
+                orderItems: cart.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            };
+
+            try {
+                const response = await fetch('http://localhost:8082/api/v1/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderDTO)
+                });
+
+                if (response.ok) {
+                    const order = await response.json();
+                    alert(`Order #${order.id} placed successfully!`);
+                    cart = [];
+                    renderCart();
+                } else {
+                    throw new Error('Failed to place order');
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                alert('Failed to place order. Please try again.');
+            }
+        });
+
+        // Kick off app
+        init();
+    });
+
 </script>
 </body>
 </html>

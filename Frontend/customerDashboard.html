@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard | SupplyChain Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 20px 0;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo h2 {
+            font-size: 1.5rem;
+        }
+
+        .logo span {
+            color: var(--primary-color);
+        }
+
+        .nav-menu {
+            margin-top: 30px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            color: var(--secondary-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .notification-bell {
+            position: relative;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* Dashboard Widgets */
+        .widgets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .widget {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+        }
+
+        .widget-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .widget-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .widget-info p {
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        /* Shipment Status */
+        .shipment-status {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+        }
+
+        .section-header a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .status-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .status-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #eee;
+            z-index: 1;
+        }
+
+        .status-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: #999;
+        }
+
+        .step-icon.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .step-icon.completed {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+        }
+
+        .step-label.active {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        /* Recent Shipments Table */
+        .recent-shipments {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-in-transit {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .action-btn.view {
+            background-color: var(--secondary-color);
+        }
+
+        .action-btn.cancel {
+            background-color: var(--accent-color);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h2 {
+            color: var(--secondary-color);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Notification Panel */
+        .notification-panel {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .widgets {
+                grid-template-columns: 1fr;
+            }
+
+            .status-steps {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+
+            .status-step {
+                margin-right: 20px;
+                margin-bottom: 20px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2>Supply<span>Chain</span> Pro</h2>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-section="shipments">
+                <i class="fas fa-shipping-fast"></i>
+                <span>Shipments</span>
+            </div>
+            <div class="nav-item" data-section="inventory">
+                <i class="fas fa-warehouse"></i>
+                <span>Inventory</span>
+            </div>
+            <div class="nav-item" data-section="invoices">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Invoices</span>
+            </div>
+            <div class="nav-item" data-section="analytics">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </div>
+            <div class="nav-item" data-section="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+            <div class="nav-item" data-section="support">
+                <i class="fas fa-question-circle"></i>
+                <span>Support</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="page-title">
+                <h1>Customer Dashboard</h1>
+            </div>
+            <div class="user-profile">
+                <div class="notification-bell" id="notificationBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                    <div class="notification-panel" id="notificationPanel">
+                        <div class="notification-header">
+                            Notifications
+                        </div>
+                        <div class="notification-item unread">
+                            <div>Your shipment #SCP-2023-04528 has departed Shanghai</div>
+                            <div class="notification-time">2 hours ago</div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div>Invoice #INV-2023-0542 is ready for payment</div>
+                            <div class="notification-time">1 day ago</div>
+                        </div>
+                        <div class="notification-item">
+                            <div>New feature: Real-time tracking now available</div>
+                            <div class="notification-time">3 days ago</div>
+                        </div>
+                    </div>
+                </div>
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile">
+                <span>John Doe</span>
+            </div>
+        </div>
+
+        <!-- Widgets -->
+        <div class="widgets">
+            <div class="widget">
+                <div class="widget-icon" style="background-color: var(--primary-color);">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div class="widget-info">
+                    <h3 id="activeShipments">24</h3>
+                    <p>Active Shipments</p>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-icon" style="background-color: var(--success-color);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="widget-info">
+                    <h3 id="completedShipments">128</h3>
+                    <p>Completed Shipments</p>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-icon" style="background-color: var(--warning-color);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="widget-info">
+                    <h3 id="delayedShipments">5</h3>
+                    <p>Delayed Shipments</p>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="widget-info">
+                    <h3 id="cancelledShipments">3</h3>
+                    <p>Cancelled Shipments</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Shipment Status -->
+        <div class="shipment-status">
+            <div class="section-header">
+                <h2>Current Shipment Status</h2>
+                <a href="#" id="viewAllShipments">View All Shipments</a>
+            </div>
+            <p id="currentShipmentInfo">Shipment #SCP-2023-04528 - Estimated Delivery: May 15, 2023</p>
+
+            <div class="status-steps">
+                <div class="status-step">
+                    <div class="step-icon completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label completed">Order Placed</span>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label completed">Processed</span>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label completed">Shipped</span>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon active">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <span class="step-label active">In Transit</span>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="step-label">Delivered</span>
+                </div>
+            </div>
+
+            <div class="shipment-details">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <div>
+                        <strong>Origin:</strong> <span id="shipmentOrigin">Shanghai, China</span>
+                    </div>
+                    <div>
+                        <strong>Destination:</strong> <span id="shipmentDestination">Los Angeles, USA</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <strong>Carrier:</strong> <span id="shipmentCarrier">Maersk Line</span>
+                    </div>
+                    <div>
+                        <strong>Vessel:</strong> <span id="shipmentVessel">Maersk Eindhoven</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Shipments -->
+        <div class="recent-shipments">
+            <div class="section-header">
+                <h2>Recent Shipments</h2>
+                <a href="#" id="viewAllRecent">View All</a>
+            </div>
+
+            <table id="shipmentsTable">
+                <thead>
+                <tr>
+                    <th>Shipment ID</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Status</th>
+                    <th>Estimated Arrival</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-shipment-id="SCP-2023-04528">
+                    <td>SCP-2023-04528</td>
+                    <td>Shanghai, CN</td>
+                    <td>Los Angeles, US</td>
+                    <td><span class="status-badge status-in-transit">In Transit</span></td>
+                    <td>May 15, 2023</td>
+                    <td>
+                        <button class="action-btn view" onclick="viewShipment('SCP-2023-04528')">View</button>
+                        <button class="action-btn cancel" onclick="cancelShipment('SCP-2023-04528')">Cancel</button>
+                    </td>
+                </tr>
+                <tr data-shipment-id="SCP-2023-04521">
+                    <td>SCP-2023-04521</td>
+                    <td>Hamburg, DE</td>
+                    <td>New York, US</td>
+                    <td><span class="status-badge status-delivered">Delivered</span></td>
+                    <td>May 5, 2023</td>
+                    <td>
+                        <button class="action-btn view" onclick="viewShipment('SCP-2023-04521')">View</button>
+                    </td>
+                </tr>
+                <tr data-shipment-id="SCP-2023-04515">
+                    <td>SCP-2023-04515</td>
+                    <td>Singapore, SG</td>
+                    <td>Long Beach, US</td>
+                    <td><span class="status-badge status-pending">Processing</span></td>
+                    <td>May 20, 2023</td>
+                    <td>
+                        <button class="action-btn view" onclick="viewShipment('SCP-2023-04515')">View</button>
+                        <button class="action-btn cancel" onclick="cancelShipment('SCP-2023-04515')">Cancel</button>
+                    </td>
+                </tr>
+                <tr data-shipment-id="SCP-2023-04502">
+                    <td>SCP-2023-04502</td>
+                    <td>Rotterdam, NL</td>
+                    <td>Savannah, US</td>
+                    <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                    <td>May 1, 2023</td>
+                    <td>
+                        <button class="action-btn view" onclick="viewShipment('SCP-2023-04502')">View</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Shipment Detail Modal -->
+<div class="modal" id="shipmentModal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-header">
+            <h2 id="modalShipmentId">Shipment Details</h2>
+        </div>
+        <div class="modal-body">
+            <div id="modalShipmentContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="action-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-header">
+            <h2 id="confirmModalTitle">Confirm Action</h2>
+        </div>
+        <div class="modal-body">
+            <p id="confirmModalMessage">Are you sure you want to perform this action?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="action-btn cancel" onclick="closeModal()">Cancel</button>
+            <button class="action-btn" id="confirmActionBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM Elements
+    const notificationBell = document.getElementById('notificationBell');
+    const notificationPanel = document.getElementById('notificationPanel');
+    const navItems = document.querySelectorAll('.nav-item');
+    const shipmentModal = document.getElementById('shipmentModal');
+    const confirmModal = document.getElementById('confirmModal');
+    const viewAllShipments = document.getElementById('viewAllShipments');
+    const viewAllRecent = document.getElementById('viewAllRecent');
+
+    // Sample shipment data
+    const shipments = {
+        'SCP-2023-04528': {
+            id: 'SCP-2023-04528',
+            origin: 'Shanghai, China',
+            destination: 'Los Angeles, USA',
+            carrier: 'Maersk Line',
+            vessel: 'Maersk Eindhoven',
+            status: 'In Transit',
+            estimatedArrival: 'May 15, 2023',
+            currentLocation: 'Pacific Ocean (25.276987, -157.485356)',
+            cargo: 'Electronics (500 cartons)',
+            weight: '12,500 kg',
+            value: '$250,000',
+            notes: 'Temperature controlled cargo. Maintain between 15-25°C.'
+        },
+        'SCP-2023-04521': {
+            id: 'SCP-2023-04521',
+            origin: 'Hamburg, Germany',
+            destination: 'New York, USA',
+            carrier: 'Hapag-Lloyd',
+            vessel: 'Montreal Express',
+            status: 'Delivered',
+            estimatedArrival: 'May 5, 2023',
+            actualArrival: 'May 4, 2023',
+            cargo: 'Automotive Parts (320 pallets)',
+            weight: '8,750 kg',
+            value: '$185,000',
+            notes: 'Delivered to warehouse B at JFK Airport'
+        },
+        'SCP-2023-04515': {
+            id: 'SCP-2023-04515',
+            origin: 'Singapore, Singapore',
+            destination: 'Long Beach, USA',
+            carrier: 'COSCO',
+            vessel: 'COSCO Harmony',
+            status: 'Processing',
+            estimatedArrival: 'May 20, 2023',
+            currentLocation: 'Port of Singapore',
+            cargo: 'Textiles (1,200 bales)',
+            weight: '15,000 kg',
+            value: '$95,000',
+            notes: 'Awaiting customs clearance'
+        },
+        'SCP-2023-04502': {
+            id: 'SCP-2023-04502',
+            origin: 'Rotterdam, Netherlands',
+            destination: 'Savannah, USA',
+            carrier: 'MSC',
+            vessel: 'MSC Isabella',
+            status: 'Cancelled',
+            estimatedArrival: 'May 1, 2023',
+            cancellationReason: 'Customer request',
+            cargo: 'Pharmaceuticals (800 boxes)',
+            weight: '3,200 kg',
+            value: '$420,000',
+            notes: 'Cancelled on April 15, 2023. Refund processed.'
+        }
+    };
+
+    // Event Listeners
+    notificationBell.addEventListener('click', toggleNotifications);
+    document.addEventListener('click', closeNotificationsOutside);
+    viewAllShipments.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Navigating to all shipments page...');
+    });
+    viewAllRecent.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Navigating to all recent shipments page...');
+    });
+
+    // Navigation
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+
+            const section = this.getAttribute('data-section');
+            if (section !== 'dashboard') {
+                alert(`Navigating to ${section} section...`);
+            }
+        });
+    });
+
+    // Notification functions
+    function toggleNotifications() {
+        notificationPanel.style.display = notificationPanel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function closeNotificationsOutside(e) {
+        if (!notificationBell.contains(e.target) {
+            notificationPanel.style.display = 'none';
+        }
+    }
+
+    // Shipment functions
+    function viewShipment(shipmentId) {
+        const shipment = shipments[shipmentId];
+        if (!shipment) return;
+
+        document.getElementById('modalShipmentId').textContent = `Shipment ${shipmentId}`;
+
+        let content = `
+                <div class="shipment-detail">
+                    <div style="margin-bottom: 15px;">
+                        <strong>Status:</strong> <span class="status-badge ${getStatusClass(shipment.status)}">${shipment.status}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div>
+                            <strong>Origin:</strong> ${shipment.origin}
+                        </div>
+                        <div>
+                            <strong>Destination:</strong> ${shipment.destination}
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div>
+                            <strong>Carrier:</strong> ${shipment.carrier}
+                        </div>
+                        <div>
+                            <strong>Vessel:</strong> ${shipment.vessel || 'N/A'}
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Estimated Arrival:</strong> ${shipment.estimatedArrival}
+                        ${shipment.actualArrival ? `<br><strong>Actual Arrival:</strong> ${shipment.actualArrival}` : ''}
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Current Location:</strong> ${shipment.currentLocation || 'N/A'}
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Cargo:</strong> ${shipment.cargo}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div>
+                            <strong>Weight:</strong> ${shipment.weight}
+                        </div>
+                        <div>
+                            <strong>Value:</strong> ${shipment.value}
+                        </div>
+                    </div>
+                    ${shipment.cancellationReason ? `
+                    <div style="margin-bottom: 15px; background-color: #f8d7da; padding: 10px; border-radius: 4px;">
+                        <strong>Cancellation Reason:</strong> ${shipment.cancellationReason}
+                    </div>
+                    ` : ''}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Notes:</strong> ${shipment.notes}
+                    </div>
+                </div>
+            `;
+
+        document.getElementById('modalShipmentContent').innerHTML = content;
+        shipmentModal.style.display = 'flex';
+    }
+
+    function cancelShipment(shipmentId) {
+        document.getElementById('confirmModalTitle').textContent = 'Cancel Shipment';
+        document.getElementById('confirmModalMessage').textContent = `Are you sure you want to cancel shipment ${shipmentId}? This action cannot be undone.`;
+
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        confirmBtn.textContent = 'Cancel Shipment';
+        confirmBtn.onclick = function() {
+            // In a real app, this would call an API
+            alert(`Shipment ${shipmentId} cancellation requested.`);
+            closeModal();
+
+            // Update the UI
+            const row = document.querySelector(`tr[data-shipment-id="${shipmentId}"]`);
+            if (row) {
+                const statusCell = row.querySelector('td:nth-child(4)');
+                statusCell.innerHTML = '<span class="status-badge status-cancelled">Cancelled</span>';
+
+                // Remove cancel button
+                const cancelBtn = row.querySelector('.cancel');
+                if (cancelBtn) cancelBtn.remove();
+            }
+        };
+
+        confirmModal.style.display = 'flex';
+    }
+
+    function getStatusClass(status) {
+        switch(status.toLowerCase()) {
+            case 'pending':
+            case 'processing':
+                return 'status-pending';
+            case 'in transit':
+                return 'status-in-transit';
+            case 'delivered':
+                return 'status-delivered';
+            case 'cancelled':
+                return 'status-cancelled';
+            default:
+                return '';
+        }
+    }
+
+    // Modal functions
+    function closeModal() {
+        shipmentModal.style.display = 'none';
+        confirmModal.style.display = 'none';
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === shipmentModal) {
+            closeModal();
+        }
+        if (event.target === confirmModal) {
+            closeModal();
+        }
+    });
+
+    // Simulate real-time updates
+    function simulateUpdates() {
+        // Randomly update the active shipments count
+        setInterval(() => {
+            const activeElement = document.getElementById('activeShipments');
+            let activeCount = parseInt(activeElement.textContent);
+            const change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+            const newCount = Math.max(0, activeCount + change);
+            if (newCount !== activeCount) {
+                activeElement.textContent = newCount;
+                animateCountChange(activeElement, change);
+            }
+        }, 10000);
+
+        // Simulate shipment progress
+        setTimeout(() => {
+            const currentShipmentInfo = document.getElementById('currentShipmentInfo');
+            currentShipmentInfo.textContent = 'Shipment #SCP-2023-04528 - Estimated Delivery: May 14, 2023 (Updated)';
+
+            // Update status steps
+            setTimeout(() => {
+                const steps = document.querySelectorAll('.status-step');
+                steps[4].querySelector('.step-icon').classList.add('completed');
+                steps[4].querySelector('.step-icon').innerHTML = '<i class="fas fa-check"></i>';
+                steps[4].querySelector('.step-label').classList.add('completed');
+
+                // Update status in table
+                const row = document.querySelector('tr[data-shipment-id="SCP-2023-04528"]');
+                if (row) {
+                    const statusCell = row.querySelector('td:nth-child(4)');
+                    statusCell.innerHTML = '<span class="status-badge status-delivered">Delivered</span>';
+
+                    // Remove cancel button
+                    const cancelBtn = row.querySelector('.cancel');
+                    if (cancelBtn) cancelBtn.remove();
+                }
+            }, 5000);
+        }, 8000);
+    }
+
+    function animateCountChange(element, change) {
+        element.style.transform = change > 0 ? 'scale(1.2)' : 'scale(0.8)';
+        element.style.color = change > 0 ? 'green' : 'red';
+
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            element.style.color = '';
+        }, 500);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        simulateUpdates();
+    });
+</script>
+</body>
+</html>

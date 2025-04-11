@@ -1,22 +1,31 @@
 package lk.ijse.backend.service.impl;
 
+import lk.ijse.backend.entity.Category;
 import lk.ijse.backend.entity.Product;
 import lk.ijse.backend.repo.ProductRepository;
 import lk.ijse.backend.service.ProductService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ProductServiceImpl implements ProductService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Autowired
     private ProductRepository productRepository;
 
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        List<Product> products = productRepository.findAll();
+        logger.info("Fetched products: {}", products);
+        return products;
     }
 
     public Optional<Product> getProductById(Long id) {

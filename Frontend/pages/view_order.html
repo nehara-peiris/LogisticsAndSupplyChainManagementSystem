@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background-color: #d4e5d4; }
+        .update-button { background-color: #4CAF50; color: white; padding: 5px 10px; border: none; cursor: pointer; }
+        select { padding: 5px; }
+    </style>
+</head>
+<body>
+<h2>Order Management</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Order Date</th>
+        <th>Total Amount</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody id="order-table"></tbody>
+</table>
+
+<script>
+    const apiBaseUrl = "http://localhost:8082/api/v1/orders";
+
+    async function loadOrders() {
+        try {
+            const response = await fetch(`${apiBaseUrl}/getAll`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add authentication if needed:
+                    // 'Authorization': 'Bearer your_token_here'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(
+                    `Failed to load orders: ${response.status} ${response.statusText}\n` +
+                    (errorData.message || '')
+                );
+            }
+
+            const orders = await response.json();
+            renderOrders(orders);
+        } catch (error) {
+            console.error("Error loading orders:", error);
+            alert(`Error loading orders: ${error.message}`);
+        }
+    }
+
+    function renderOrders(orders) {
+        const table = document.getElementById('order-table');
+        table.innerHTML = "";
+
+        orders.forEach(order => {
+            let row = table.insertRow();
+            row.insertCell(0).textContent = order.id;
+            row.insertCell(1).textContent = order.customer?.name || 'N/A';
+            row.insertCell(2).textContent = new Date(order.orderDate).toLocaleDateString();
+            row.insertCell(3).textContent = `$${order.totalAmount?.toFixed(2) || '0.00'}`;
+
+            // Status dropdown
+            let statusCell = row.insertCell(4);
+            let statusSelect = document.createElement("select");
+            ["Pending", "Processing", "Shipped", "Delivered"].forEach(status => {
+                let option = new Option(status, status);
+                option.selected = order.status === status;
+                statusSelect.appendChild(option);
+            });
+            statusCell.appendChild(statusSelect);
+
+            // Update button
+            let actionCell = row.insertCell(5);
+            let updateButton = document.createElement("button");
+            updateButton.className = "update-button";
+            updateButton.textContent = "Update";
+            updateButton.onclick = () => updateOrderStatus(order.id, statusSelect.value);
+            actionCell.appendChild(updateButton);
+        });
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+        try {
+            const response = await fetch(`${apiBaseUrl}/updateStatus/${orderId}`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add authentication if needed:
+                    // 'Authorization': 'Bearer your_token_here'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update status: ${response.status}`);
+            }
+
+            // Refresh the orders list
+            await loadOrders();
+        } catch (error) {
+            console.error("Error updating order status:", error);
+            alert(`Failed to update status: ${error.message}`);
+        }
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener("DOMContentLoaded", loadOrders);
+</script>
+</body>
+</html>

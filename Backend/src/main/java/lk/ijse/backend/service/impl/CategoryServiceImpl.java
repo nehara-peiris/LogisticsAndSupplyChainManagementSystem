@@ -22,7 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     public List<Category> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
-        logger.info("Fetched categories: {}", categories);  // Log result
+        logger.info("Fetched categories: {}", categories);
         return categories;
     }
 

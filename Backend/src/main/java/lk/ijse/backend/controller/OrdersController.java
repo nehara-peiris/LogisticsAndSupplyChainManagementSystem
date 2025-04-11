@@ -1,7 +1,9 @@
+// OrderController.java
 package lk.ijse.backend.controller;
 
+import lk.ijse.backend.dto.OrderDTO;
 import lk.ijse.backend.entity.Orders;
-import lk.ijse.backend.service.impl.OrderServiceImpl;
+import lk.ijse.backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,36 +12,27 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@CrossOrigin(origins = "*")
 public class OrdersController {
 
     @Autowired
-    private OrderServiceImpl ordersService;
+    private OrderService orderService;
 
-    @GetMapping("/getAll")
-    public List<Orders> getAllOrders() {
-        return ordersService.getAllOrders();
+    @PostMapping
+    public ResponseEntity<Orders> placeOrder(@RequestBody OrderDTO orderDTO) {
+        Orders order = orderService.placeOrder(orderDTO);
+        return ResponseEntity.ok(order);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Orders>> getAllOrders() {
+        List<Orders> orders = orderService.getAllOrders();
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Orders> getOrderById(@PathVariable Long id) {
-        return ordersService.getOrderById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public Orders createOrder(@RequestBody Orders order) {
-        return ordersService.createOrder(order);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Orders> updateOrder(@PathVariable Long id, @RequestBody Orders orderDetails) {
-        return ResponseEntity.ok(ordersService.updateOrder(id, orderDetails));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        ordersService.deleteOrder(id);
-        return ResponseEntity.noContent().build();
+        Orders order = orderService.getOrderById(id);
+        return ResponseEntity.ok(order);
     }
 }
