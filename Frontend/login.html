@@ -51,25 +51,44 @@
 <script src="js/jquery.js"></script>
 <script>
   let loginUser = function() {
-    let loginUser = {
+    let loginData = {
       'email': $('#email').val(),
       'password': $('#password').val(),
     };
+
     $.ajax({
       url: `http://localhost:8082/api/v1/auth/authenticate`,
       method: `POST`,
-      headers: {
-        "Authorization": "Bearer " + localStorage.getItem("authToken"),
-        "Content-Type": "application/json"
+      contentType: "application/json",
+      data: JSON.stringify(loginData),
+      success: function(response) {
+        // Store the token and user details in localStorage
+        localStorage.setItem('authToken', response.token);
+
+        // Decode the JWT token to get user role
+        const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
+        const userRole = tokenPayload.role; // Assuming your JWT contains a 'role' claim
+
+        // Determine the dashboard based on role
+        let dashboard;
+        if (userRole === 'ADMIN') {
+          dashboard = 'adminDashboard.html';
+        } else {
+          dashboard = 'userDashboard.html';
+        }
+
+        // Check for redirect URL or go to appropriate dashboard
+        const redirectUrl = localStorage.getItem('loginRedirect') || dashboard;
+        localStorage.removeItem('loginRedirect');
+
+        window.location.href = redirectUrl;
       },
-      data: JSON.stringify(loginUser),
-      success: function() {
-        setTimeout(function() {
-          window.location.href = "adminDashboard.html";
-        }, 1000);
-      },
-      error: function() {
-        alert("Login failed. Please check your credentials.");
+      error: function(xhr) {
+        if (xhr.status === 403) {
+          alert("Invalid credentials. Please try again.");
+        } else {
+          alert("Login failed. Please try again later.");
+        }
       }
     });
   }

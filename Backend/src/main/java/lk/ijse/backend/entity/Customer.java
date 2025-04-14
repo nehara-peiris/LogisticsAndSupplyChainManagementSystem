@@ -32,6 +32,14 @@ public class Customer {
     @JsonIgnore
     private List<Orders> orders;
 
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 
 }
 

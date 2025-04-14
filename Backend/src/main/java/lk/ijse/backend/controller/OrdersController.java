@@ -1,4 +1,3 @@
-// OrderController.java
 package lk.ijse.backend.controller;
 
 import lk.ijse.backend.dto.OrderDTO;
@@ -10,13 +9,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.web.bind.annotation.RequestMethod.*;
+
 @RestController
 @RequestMapping("/api/v1/orders")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:63342")
 public class OrdersController {
 
     @Autowired
     private OrderService orderService;
+
 
     @PostMapping
     public ResponseEntity<Orders> placeOrder(@RequestBody OrderDTO orderDTO) {
@@ -35,5 +37,4 @@ public class OrdersController {
         Orders order = orderService.getOrderById(id);
         return ResponseEntity.ok(order);
     }
-
 }

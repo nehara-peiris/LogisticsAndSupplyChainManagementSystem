@@ -5,108 +5,230 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        th { background-color: #d4e5d4; }
-        .update-button { background-color: #4CAF50; color: white; padding: 5px 10px; border: none; cursor: pointer; }
-        select { padding: 5px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        button.delete { background-color: #f44336; }
+        select { padding: 5px; width: 100%; }
+        #loading {
+            padding: 10px;
+            background: #f0f0f0;
+            margin: 10px 0;
+            display: none;
+        }
+        .error { color: red; margin: 10px 0; }
     </style>
 </head>
 <body>
 <h2>Order Management</h2>
+<div id="loading">Loading orders...</div>
+<div id="error" class="error"></div>
 <table>
     <thead>
     <tr>
         <th>Order ID</th>
         <th>Customer</th>
-        <th>Order Date</th>
-        <th>Total Amount</th>
+        <th>Date</th>
+        <th>Amount</th>
         <th>Status</th>
-        <th>Action</th>
+        <th>Actions</th>
     </tr>
     </thead>
     <tbody id="order-table"></tbody>
 </table>
 
 <script>
+    // Configuration
     const API_URL = "http://localhost:8082/api/v1/orders";
 
-    async function loadOrders() {
+    // DOM Elements
+    const loadingElement = document.getElementById('loading');
+    const errorElement = document.getElementById('error');
+    const orderTable = document.getElementById('order-table');
+
+    // Check authentication state
+    function checkAuth() {
+        const token = localStorage.getItem('authToken');
+        if (!token || token === 'null') {
+            localStorage.setItem('loginRedirect', window.location.pathname);
+            window.location.href = '../login.html';
+            return false;
+        }
+        return true;
+    }
+
+    // Show error message
+    function showError(message) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    // Clear error message
+    function clearError() {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+    }
+
+    // Fetch orders from API
+    async function fetchOrders() {
+        const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            const response = await fetch(`${API_URL}/getAll`, {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                credentials: 'include'
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('authToken');
+                window.location.href = '../login.html';
+                return null;
             }
-            const orders = await response.json();
-            renderOrders(orders);
+
+            if (!response.ok) {
+                throw new Error(`Failed to load orders: ${response.status}`);
+            }
+
+            return await response.json();
         } catch (error) {
-            console.error("Error loading orders:", error);
-            alert("Failed to load orders. Check console for details.");
+            console.error('Fetch error:', error);
+            throw error;
         }
     }
 
-    function renderOrders(orders) {
-        const table = document.getElementById('order-table');
-        table.innerHTML = "";
+    // Update order status
+    async function updateOrderStatus(orderId, newStatus) {
+        const token = localStorage.getItem('authToken');
+        try {
+            const response = await fetch(`${API_URL}/${orderId}/status`, {
+                method: 'PUT',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('authToken');
+                window.location.href = '../login.html';
+                return false;
+            }
+
+            if (!response.ok) {
+                throw new Error(`Failed to update status: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Update error:', error);
+            throw error;
+        }
+    }
+
+    // Display orders in table
+    function showOrders(orders) {
+        orderTable.innerHTML = ''; // Clear existing rows
+
+        if (!orders || orders.length === 0) {
+            const row = orderTable.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 6;
+            cell.textContent = 'No orders found';
+            return;
+        }
 
         orders.forEach(order => {
-            const row = table.insertRow();
+            const row = orderTable.insertRow();
 
             // Order ID
-            row.insertCell(0).textContent = order.id || 'N/A';
+            row.insertCell().textContent = order.id || 'N/A';
 
-            row.insertCell(1).textContent = order.customer?.name || 'N/A';
+            // Customer Name
+            row.insertCell().textContent = order.customer?.name || 'N/A';
 
             // Order Date
-            const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A';
-            row.insertCell(2).textContent = orderDate;
+            const dateCell = row.insertCell();
+            dateCell.textContent = order.orderDate ?
+                new Date(order.orderDate).toLocaleDateString() : 'N/A';
 
             // Total Amount
-            row.insertCell(3).textContent = order.totalAmount ? `$${order.totalAmount.toFixed(2)}` : '$0.00';
+            const amountCell = row.insertCell();
+            amountCell.textContent = order.totalAmount ?
+                `$${order.totalAmount.toFixed(2)}` : '$0.00';
 
-            // Status (with dropdown)
-            const statusCell = row.insertCell(4);
-            const statusSelect = document.createElement('select');
+            // Status Dropdown
+            const statusCell = row.insertCell();
+            const select = document.createElement('select');
             ['PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED'].forEach(status => {
                 const option = document.createElement('option');
                 option.value = status;
                 option.textContent = status;
                 if (order.status === status) option.selected = true;
-                statusSelect.appendChild(option);
+                select.appendChild(option);
             });
-            statusCell.appendChild(statusSelect);
+            statusCell.appendChild(select);
 
-            // Action button
-            const actionCell = row.insertCell(5);
-            const updateBtn = document.createElement('button');
-            updateBtn.className = 'update-button';
-            updateBtn.textContent = 'Update';
-            updateBtn.onclick = () => updateOrderStatus(order.id, statusSelect.value);
-            actionCell.appendChild(updateBtn);
+            // Action Buttons
+            const actionCell = row.insertCell();
+
+            // Update Button
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Update';
+            updateButton.onclick = async () => {
+                try {
+                    loadingElement.style.display = 'block';
+                    clearError();
+
+                    const success = await updateOrderStatus(order.id, select.value);
+                    if (success) {
+                        alert('Status updated successfully');
+                        // Optional: Refresh the orders
+                        const orders = await fetchOrders();
+                        showOrders(orders);
+                    }
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    loadingElement.style.display = 'none';
+                }
+            };
+            actionCell.appendChild(updateButton);
         });
     }
 
-    async function updateOrderStatus(orderId, newStatus) {
+    // Initialize the page
+    window.onload = async function() {
+        if (!checkAuth()) return;
+
         try {
-            const response = await fetch(`${API_URL}/${orderId}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
+            loadingElement.style.display = 'block';
+            clearError();
 
-            if (!response.ok) throw new Error('Failed to update status');
-
-            alert('Status updated successfully');
-            loadOrders(); // Refresh the table
+            const orders = await fetchOrders();
+            if (orders) {
+                showOrders(orders);
+            }
         } catch (error) {
-            console.error('Error updating status:', error);
-            alert('Failed to update status');
+            showError(error.message);
+        } finally {
+            loadingElement.style.display = 'none';
         }
-    }
-
-    // Load orders when page loads
-    document.addEventListener('DOMContentLoaded', loadOrders);
+    };
 </script>
 </body>
 </html>

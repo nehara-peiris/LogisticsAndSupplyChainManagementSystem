@@ -47,6 +47,15 @@ public class OrderServiceImpl implements OrderService {
                     Product product = productRepository.findById(productDTO.getProductId())
                             .orElseThrow(() -> new RuntimeException("Product not found"));
 
+                    if (product.getQuantity() < productDTO.getQuantity()) {
+                        throw new RuntimeException("Insufficient quantity for product: " + product.getName() +
+                                ". Available: " + product.getQuantity() +
+                                ", Requested: " + productDTO.getQuantity());
+                    }
+
+                    product.setQuantity(product.getQuantity() - productDTO.getQuantity());
+                    productRepository.save(product);
+
                     OrderItem orderItem = new OrderItem();
                     orderItem.setOrder(savedOrder);
                     orderItem.setProduct(product);
@@ -73,6 +82,5 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
     }
-
 
 }

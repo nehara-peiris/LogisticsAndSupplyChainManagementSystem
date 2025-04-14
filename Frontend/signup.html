@@ -190,7 +190,91 @@
     </div>
 </form>
 
-<script src="js/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#save-btn').on('click', function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Collect user data (trim whitespace)
+            const user = {
+                email: $('#email').val().trim(),
+                name: $('#name').val().trim(),
+                password: $('#password').val().trim(),
+                role: $('#role').val().trim()
+            };
+
+            // **Enhanced Validation**
+            if (!user.email || !user.name || !user.password || user.role === "Role") {
+                alert("Please fill all fields correctly!");
+                return;
+            }
+
+            // **Email format validation (basic)**
+            if (!/^\S+@\S+\.\S+$/.test(user.email)) {
+                alert("Please enter a valid email address!");
+                return;
+            }
+
+            // **Password strength check (optional)**
+            if (user.password.length < 8) {
+                alert("Password must be at least 8 characters long!");
+                return;
+            }
+
+            // **AJAX Request with Error Handling**
+            $.ajax({
+                url: `http://localhost:8082/api/v1/user/register`,
+                method: `POST`,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                data: JSON.stringify(user),
+                success: function (response) {
+                    if (!response || !response.data || !response.data.token) {
+                        console.error("Invalid response format:", response);
+                        alert("Registration failed: No token received.");
+                        return;
+                    }
+
+                    const token = response.data.token;
+                    console.log("Token:", token);
+
+                    // **Store token securely (only in localStorage OR sessionStorage)**
+                    localStorage.setItem("authToken", token); // Persistent storage
+                    // sessionStorage.setItem("authToken", token); // Session-based storage (choose one)
+
+                    try {
+                        // **Decode JWT to extract role (requires jwt-decode library)**
+                        const decodedToken = jwt_decode(token);
+                        const userRole = decodedToken.role?.toUpperCase(); // Ensure uppercase comparison
+
+                        // **Redirect based on role**
+                        switch (userRole) {
+                            case 'ADMIN':
+                                window.location.href = "adminDashboard.html";
+                                break;
+                            case 'USER':
+                                window.location.href = "userDashboard.html";
+                                break;
+                            default:
+                                alert("Unknown role detected. Redirecting to default page.");
+                                window.location.href = "default.html"; // Fallback
+                        }
+                    } catch (decodeError) {
+                        console.error("Failed to decode token:", decodeError);
+                        alert("Login successful, but role detection failed.");
+                        window.location.href = "default.html"; // Fallback
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Registration Error:", xhr.responseJSON || error);
+                    const errorMsg = xhr.responseJSON?.message || "Registration failed. Please try again.";
+                    alert(`Error: ${errorMsg}`);
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>
