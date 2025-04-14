@@ -1,7 +1,9 @@
 package lk.ijse.backend.service.impl;
 
 import lk.ijse.backend.dto.OrderDTO;
+import lk.ijse.backend.dto.OrderResponseDTO;
 import lk.ijse.backend.entity.*;
+import lk.ijse.backend.exception.ResourceNotFoundException;
 import lk.ijse.backend.repo.CustomerRepository;
 import lk.ijse.backend.repo.OrderItemRepo;
 import lk.ijse.backend.repo.OrdersRepo;
@@ -82,5 +84,31 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
     }
+
+    @Override
+    public OrderResponseDTO updateOrderStatus(Long orderId, String status) {
+        // Validate status
+        if (!List.of("PENDING", "PROCESSING", "COMPLETED", "CANCELLED").contains(status)) {
+            throw new IllegalArgumentException("Invalid order status: " + status);
+        }
+
+        // Find the order
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        // Update status
+        order.setStatus(status);
+        Orders updatedOrder = orderRepository.save(order);
+
+        // Convert to DTO and return
+        return new OrderResponseDTO(
+                updatedOrder.getId(),
+                updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getName() : null,
+                updatedOrder.getOrderDate(),
+                updatedOrder.getTotalAmount(),
+                updatedOrder.getStatus()
+        );
+    }
+
 
 }
