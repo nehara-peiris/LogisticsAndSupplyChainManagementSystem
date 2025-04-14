@@ -26,10 +26,19 @@
             display: none;
         }
         .error { color: red; margin: 10px 0; }
+        .auth-message {
+            padding: 15px;
+            background: #fff4e5;
+            border-left: 4px solid #ff9800;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 <h2>Order Management</h2>
+<div id="auth-message" class="auth-message" style="display: none;">
+    You need to be logged in to view orders. Redirecting to login page...
+</div>
 <div id="loading">Loading orders...</div>
 <div id="error" class="error"></div>
 <table>
@@ -49,18 +58,30 @@
 <script>
     // Configuration
     const API_URL = "http://localhost:8082/api/v1/orders";
+    const LOGIN_URL = "../login.html";
+    const REDIRECT_DELAY = 2000; // 2 seconds
 
     // DOM Elements
     const loadingElement = document.getElementById('loading');
     const errorElement = document.getElementById('error');
     const orderTable = document.getElementById('order-table');
+    const authMessage = document.getElementById('auth-message');
 
-    // Check authentication state
+    // Check authentication state with better feedback
     function checkAuth() {
         const token = localStorage.getItem('authToken');
         if (!token || token === 'null') {
+            authMessage.style.display = 'block';
+            loadingElement.style.display = 'none';
+
+            // Store current URL for redirect back after login
             localStorage.setItem('loginRedirect', window.location.pathname);
-            window.location.href = '../login.html';
+
+            // Redirect after delay to show message
+            setTimeout(() => {
+                window.location.href = LOGIN_URL;
+            }, REDIRECT_DELAY);
+
             return false;
         }
         return true;
@@ -78,23 +99,26 @@
         errorElement.style.display = 'none';
     }
 
-    // Fetch orders from API
+    // Enhanced fetch with better error handling
     async function fetchOrders() {
         const token = localStorage.getItem('authToken');
+        if (!token) {
+            showAuthMessage("Session expired. Please login again.");
+            return null;
+        }
+
         try {
             const response = await fetch(`${API_URL}/getAll`, {
                 method: 'GET',
-                mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
-                credentials: 'include'
+                }
             });
 
             if (response.status === 401 || response.status === 403) {
                 localStorage.removeItem('authToken');
-                window.location.href = '../login.html';
+                showAuthMessage("Session expired. Redirecting to login...");
                 return null;
             }
 
@@ -108,14 +132,15 @@
             throw error;
         }
     }
-
-    // Update order status
+    // Update order status with better feedback
     async function updateOrderStatus(orderId, newStatus) {
         const token = localStorage.getItem('authToken');
         try {
+            loadingElement.style.display = 'block';
+            clearError();
+
             const response = await fetch(`${API_URL}/${orderId}/status`, {
                 method: 'PUT',
-                mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -124,19 +149,28 @@
             });
 
             if (response.status === 401 || response.status === 403) {
+                authMessage.textContent = 'Session expired during update. Please login again.';
+                authMessage.style.display = 'block';
                 localStorage.removeItem('authToken');
-                window.location.href = '../login.html';
+
+                setTimeout(() => {
+                    window.location.href = LOGIN_URL;
+                }, REDIRECT_DELAY);
+
                 return false;
             }
 
             if (!response.ok) {
-                throw new Error(`Failed to update status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Failed to update status: ${response.status}`);
             }
 
             return true;
         } catch (error) {
             console.error('Update error:', error);
             throw error;
+        } finally {
+            loadingElement.style.display = 'none';
         }
     }
 
@@ -191,9 +225,6 @@
             updateButton.textContent = 'Update';
             updateButton.onclick = async () => {
                 try {
-                    loadingElement.style.display = 'block';
-                    clearError();
-
                     const success = await updateOrderStatus(order.id, select.value);
                     if (success) {
                         alert('Status updated successfully');
@@ -203,30 +234,24 @@
                     }
                 } catch (error) {
                     showError(error.message);
-                } finally {
-                    loadingElement.style.display = 'none';
                 }
             };
             actionCell.appendChild(updateButton);
         });
     }
 
-    // Initialize the page
+    // Initialize the page with better flow
     window.onload = async function() {
+        // First check auth without loading indicator
         if (!checkAuth()) return;
 
         try {
-            loadingElement.style.display = 'block';
-            clearError();
-
             const orders = await fetchOrders();
             if (orders) {
                 showOrders(orders);
             }
         } catch (error) {
             showError(error.message);
-        } finally {
-            loadingElement.style.display = 'none';
         }
     };
 </script>

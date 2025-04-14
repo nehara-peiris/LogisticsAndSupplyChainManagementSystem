@@ -1,5 +1,6 @@
 package lk.ijse.backend.controller;
 
+import jakarta.transaction.Transactional;
 import lk.ijse.backend.dto.OrderDTO;
 import lk.ijse.backend.entity.Orders;
 import lk.ijse.backend.service.OrderService;
@@ -27,6 +28,7 @@ public class OrdersController {
     }
 
     @GetMapping("/getAll")
+    @Transactional
     public ResponseEntity<List<Orders>> getAllOrders() {
         List<Orders> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
