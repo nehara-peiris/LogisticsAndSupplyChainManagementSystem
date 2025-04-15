@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class OrderDTO {
-    private Long customerId;
+    private String customerEmail;
     private double totalAmount;
     private List<OrderItemDTO> orderItems;
 }

@@ -34,7 +34,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Orders placeOrder(OrderDTO orderDTO) {
-        Customer customer = customerRepository.findById(orderDTO.getCustomerId())
+        Customer customer = customerRepository.findByEmail(orderDTO.getCustomerEmail())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         Orders order = new Orders();

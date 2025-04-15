@@ -65,19 +65,6 @@ public class OrdersController {
         }
     }
 
-/*    @PutMapping("/{orderId}/status")
-    public ResponseEntity<?> updateOrderStatus(
-            @PathVariable Long orderId,
-            @RequestBody OrderStatusUpdateDTO statusUpdate) {
-        try {
-            OrderResponseDTO updatedOrder = orderService.updateOrderStatus(orderId, statusUpdate.getStatus());
-            return ResponseEntity.ok(updatedOrder);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to update order status: " + e.getMessage());
-        }
-    }*/
-
     @PutMapping("/{orderId}/status")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable Long orderId,

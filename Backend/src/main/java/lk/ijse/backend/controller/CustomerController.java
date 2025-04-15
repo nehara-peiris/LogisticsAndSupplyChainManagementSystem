@@ -28,6 +28,14 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/by-email")
+    public ResponseEntity<Customer> getCustomerByEmail(@RequestParam String email) {
+        System.out.println("Received request for email: " + email); // Temporary logging
+        return customerService.getCustomerByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/save")
     public Customer createCustomer(@RequestBody Customer customer) {
         return customerService.createCustomer(customer);

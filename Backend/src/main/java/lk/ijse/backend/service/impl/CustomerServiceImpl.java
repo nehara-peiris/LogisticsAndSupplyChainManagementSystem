@@ -30,6 +30,10 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findById(id);
     }
 
+    public Optional<Customer> getCustomerByEmail(String email) {
+        return customerRepository.findByEmail(email);
+    }
+
     public Customer createCustomer(Customer customer) {
         return customerRepository.save(customer);
     }
