@@ -5,182 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Database Table</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-green: #4CAF50;
+            --accent-green-dark: #388E3C;
+            --accent-green-light: #81C784;
+            --border-color: #2d2d2d;
+            --hover-bg: #2a2a2a;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eef2f7;
-            padding: 30px;
-            color: #333;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 1200px;
-            margin: auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--darker-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h2, h3 {
+            color: var(--accent-green-light);
+            margin-bottom: 20px;
         }
 
         h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 25px;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 16px;
-            color: #fff;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        .add-button {
-            background-color: #28a745;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .add-button:hover {
-            background-color: #218838;
+            border-bottom: 2px solid var(--accent-green);
+            padding-bottom: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: #fafafa;
+            margin: 25px 0;
+            background-color: var(--card-bg);
             border-radius: 8px;
             overflow: hidden;
         }
 
         th, td {
-            border: 1px solid #dee2e6;
-            padding: 12px;
-            text-align: center;
-            vertical-align: middle;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background-color: #007bff;
+            background-color: var(--accent-green-dark);
             color: white;
             font-weight: 600;
-            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        td {
-            background-color: #ffffff;
-            word-break: break-word;
+        tr:hover {
+            background-color: var(--hover-bg);
         }
 
-        .actions button {
-            margin: 2px 3px;
-            padding: 6px 12px;
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        button {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
             border-radius: 5px;
-            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
         }
 
-        .edit-button {
-            background-color: #ffc107;
-            color: #212529;
+        button:hover {
+            background-color: var(--accent-green-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .edit-button:hover {
-            background-color: #e0a800;
+        .add-button {
+            background-color: var(--accent-green);
+            margin-bottom: 20px;
         }
 
-        .delete-button {
-            background-color: #dc3545;
+        .add-button:hover {
+            background-color: var(--accent-green-dark);
         }
 
-        .delete-button:hover {
-            background-color: #c82333;
+        button a {
+            color: white;
+            text-decoration: none;
         }
 
         .modal {
             display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 25px 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            z-index: 999;
-            width: 400px;
-            max-width: 90%;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
         }
 
         .modal h3 {
-            margin-bottom: 15px;
-            color: #333;
-            text-align: center;
+            margin-top: 0;
+            color: var(--accent-green-light);
         }
 
-        .modal input {
+        .modal > * {
+            margin: 10px 0;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+            animation: modalopen 0.4s;
+        }
+
+        @keyframes modalopen {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px 15px;
             margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
+            display: inline-block;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: border 0.3s;
         }
 
-        .modal button {
-            width: 48%;
-            font-weight: 500;
-            margin-top: 10px;
+        input[type="text"]:focus {
+            outline: none;
+            border: 1px solid var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
         }
 
-        .modal button:nth-child(11),
-        .modal button:nth-child(12) {
-            background-color: #6c757d;
+        .actions button {
+            padding: 8px 15px;
+            margin: 0 5px;
         }
 
-        .modal button:nth-child(11):hover,
-        .modal button:nth-child(12):hover {
-            background-color: #5a6268;
+        .actions button:first-child {
+            background-color: var(--accent-green-light);
         }
 
-        a {
-            color: #fff;
-            text-decoration: none;
+        .actions button:last-child {
+            background-color: #f44336;
         }
 
-        .container > button:last-of-type {
-            background-color: #17a2b8;
-            margin-top: 15px;
+        .actions button:first-child:hover {
+            background-color: var(--accent-green);
         }
 
-        .container > button:last-of-type:hover {
-            background-color: #138496;
-        }
-
-        @media (max-width: 768px) {
-            th, td {
-                font-size: 13px;
-                padding: 8px;
-            }
-
-            .modal {
-                width: 90%;
-            }
-
-            .modal input {
-                font-size: 13px;
-            }
+        .actions button:last-child:hover {
+            background-color: #d32f2f;
         }
     </style>
-
 </head>
 <body>
 <div class="container">

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>cus verify</title>
+    <style>
+        /* Customer Verification Modal Styles */
+        #customerVerificationForm .form-control:invalid {
+            border-color: #dc3545;
+        }
+
+        #customerVerificationForm .was-validated .form-control:invalid {
+            border-color: #dc3545;
+        }
+
+        #customerVerificationForm .was-validated .form-control:valid {
+            border-color: #28a745;
+        }
+
+        /* Edit Profile Button */
+        #editProfileBtn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Customer Verification Modal -->
+<div class="modal fade" id="customerVerificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Complete Your Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customerVerificationForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customerName" class="form-label">Full Name*</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="customerEmail" class="form-label">Email*</label>
+                            <input type="email" class="form-control" id="customerEmail" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customerPhone" class="form-label">Phone Number*</label>
+                            <input type="tel" class="form-control" id="customerPhone" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="customerAddress" class="form-label">Address*</label>
+                            <input type="text" class="form-control" id="customerAddress" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="customerCity" class="form-label">City*</label>
+                            <input type="text" class="form-control" id="customerCity" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="customerState" class="form-label">State/Province*</label>
+                            <input type="text" class="form-control" id="customerState" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="customerZip" class="form-label">ZIP Code*</label>
+                            <input type="text" class="form-control" id="customerZip" required>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="termsAgreement" required>
+                        <label class="form-check-label" for="termsAgreement">
+                            I agree to the terms and conditions
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveCustomerProfileBtn">Save & Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add to your existing script
+    let customerVerified = false;
+    let currentCustomer = null;
+
+    // Modified init function
+    async function init() {
+        await verifyAuthentication();
+        await checkCustomerProfile();
+        await fetchProducts();
+        filteredProducts = [...products];
+        renderProducts();
+        renderCart();
+    }
+
+    // New function to check customer profile
+    async function checkCustomerProfile() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '../login.html';
+            return;
+        }
+
+        try {
+            // Try to fetch existing customer profile
+            const response = await fetch('http://localhost:8082/api/v1/customers/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                currentCustomer = await response.json();
+                customerVerified = true;
+                updateCustomerUI();
+            } else if (response.status === 404) {
+                // Customer profile doesn't exist - show verification form
+                showCustomerVerificationForm();
+            } else {
+                throw new Error('Failed to check customer profile');
+            }
+        } catch (error) {
+            console.error('Profile check error:', error);
+            showCustomerVerificationForm();
+        }
+    }
+
+    // Show verification form
+    function showCustomerVerificationForm() {
+        const modal = new bootstrap.Modal(document.getElementById('customerVerificationModal'));
+        modal.show();
+
+        // Pre-fill email if available from auth token
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.email) {
+                    document.getElementById('customerEmail').value = payload.email;
+                    document.getElementById('customerEmail').readOnly = true;
+                }
+                if (payload.sub) {
+                    document.getElementById('customerName').value = payload.sub;
+                }
+            } catch (e) {
+                console.error('Token parsing error:', e);
+            }
+        }
+    }
+
+    // Save customer profile
+    document.getElementById('saveCustomerProfileBtn').addEventListener('click', async function() {
+        const form = document.getElementById('customerVerificationForm');
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const customerData = {
+            name: document.getElementById('customerName').value,
+            email: document.getElementById('customerEmail').value,
+            contact: document.getElementById('customerPhone').value,
+            address: document.getElementById('customerAddress').value,
+            city: document.getElementById('customerCity').value,
+            state: document.getElementById('customerState').value,
+            zipCode: document.getElementById('customerZip').value
+        };
+
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('http://localhost:8082/api/v1/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(customerData)
+            });
+
+            if (response.ok) {
+                currentCustomer = await response.json();
+                customerVerified = true;
+                updateCustomerUI();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('customerVerificationModal'));
+                modal.hide();
+            } else {
+                throw new Error('Failed to save customer profile');
+            }
+        } catch (error) {
+            console.error('Error saving customer:', error);
+            alert('Failed to save customer profile. Please try again.');
+        }
+    });
+
+    // Update checkout button to verify customer first
+    document.getElementById('checkoutBtn').addEventListener('click', async function() {
+        if (!customerVerified) {
+            alert('Please complete your customer profile before checkout');
+            showCustomerVerificationForm();
+            return;
+        }
+
+        // Original checkout logic here
+        if (cart.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+
+        const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        const orderDTO = {
+            customerId: currentCustomer.id,
+            totalAmount: totalAmount,
+            orderItems: cart.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.price
+            }))
+        };
+
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('http://localhost:8082/api/v1/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(orderDTO)
+            });
+
+            if (response.ok) {
+                const order = await response.json();
+                alert(`Order #${order.id} placed successfully!`);
+                cart = [];
+                renderCart();
+            } else {
+                throw new Error('Failed to place order');
+            }
+        } catch (error) {
+            console.error('Error placing order:', error);
+            alert(`Failed to place order: ${error.message}`);
+        }
+    });
+
+    // Update customer UI display
+    function updateCustomerUI() {
+        if (!currentCustomer) return;
+
+        document.getElementById('loggedInCustomerName').textContent = currentCustomer.name || 'Customer';
+        document.getElementById('loggedInCustomerEmail').textContent = currentCustomer.email || '';
+        if (currentCustomer.id) {
+            document.getElementById('customerId').value = currentCustomer.id;
+        }
+
+        // Update customer info section
+        const customerInfoDiv = document.querySelector('.customer-info');
+        customerInfoDiv.innerHTML = `
+        <h4>Customer: ${currentCustomer.name}</h4>
+        <p class="mb-1">Email: ${currentCustomer.email}</p>
+        <p class="mb-1">Phone: ${currentCustomer.contact || 'Not provided'}</p>
+        <p class="mb-1">Address: ${currentCustomer.address || 'Not provided'}</p>
+        <button class="btn btn-sm btn-outline-primary mt-2" id="editProfileBtn">
+            <i class="bi bi-pencil"></i> Edit Profile
+        </button>
+    `;
+
+        // Add edit profile button handler
+        document.getElementById('editProfileBtn')?.addEventListener('click', showCustomerVerificationForm);
+    }
+</script>
+</body>
+</html>

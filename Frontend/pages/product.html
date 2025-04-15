@@ -5,153 +5,238 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Database Table</title>
     <style>
+
+        :root {
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-green: #4CAF50;
+            --accent-green-dark: #388E3C;
+            --accent-green-light: #81C784;
+            --border-color: #2d2d2d;
+            --hover-bg: #2a2a2a;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            margin: 40px;
-            color: #333;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--darker-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h2, h3 {
+            color: var(--accent-green-light);
+            margin-bottom: 20px;
         }
 
         h2 {
-            color: #2c3e50;
+            border-bottom: 2px solid var(--accent-green);
+            padding-bottom: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin: 25px 0;
+            background-color: var(--card-bg);
             border-radius: 8px;
             overflow: hidden;
         }
 
         th, td {
-            border: 1px solid #e0e0e0;
-            padding: 12px;
-            text-align: center;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background-color: #d1e7dd;
-            color: #2d6a4f;
+            background-color: var(--accent-green-dark);
+            color: white;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .actions button {
-            margin: 0 5px;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        tr:hover {
+            background-color: var(--hover-bg);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        button {
+            background-color: var(--accent-green);
             color: white;
-            font-weight: 500;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: var(--accent-green-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .add-button {
-            background-color: #4caf50;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: background-color 0.2s ease;
+            background-color: var(--accent-green);
+            margin-bottom: 20px;
         }
 
         .add-button:hover {
-            background-color: #45a049;
+            background-color: var(--accent-green-dark);
         }
 
-        .edit-button {
-            background-color: #f4c542;
+        button a {
+            color: white;
+            text-decoration: none;
         }
 
-        .edit-button:hover {
-            background-color: #e0b937;
-        }
-
-        .delete-button {
-            background-color: #e74c3c;
-        }
-
-        .delete-button:hover {
-            background-color: #d73825;
-        }
-
-        #popupForm, #editPopup {
+        .modal {
             display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px 30px;
-            border: 1px solid #ccc;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            border-radius: 10px;
-            width: 300px;
-            z-index: 10;
-        }
-
-        #popupForm input, #editPopup input,
-        #popupForm select, #editPopup select {
-            margin: 10px 0;
-            padding: 10px;
+            z-index: 1;
+            left: 0;
+            top: 0;
             width: 100%;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
         }
 
-        #popupForm button, #editPopup button {
-            margin-top: 10px;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
+        .modal h3 {
+            margin-top: 0;
+            color: var(--accent-green-light);
+        }
+
+        .modal > * {
+            margin: 10px 0;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+            animation: modalopen 0.4s;
+        }
+
+        @keyframes modalopen {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border: 1px solid var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .actions button {
+            padding: 8px 15px;
+            margin: 0 5px;
+        }
+
+        .actions button:first-child {
+            background-color: var(--accent-green-light);
+        }
+
+        .actions button:last-child {
+            background-color: #f44336;
+        }
+
+        .actions button:first-child:hover {
+            background-color: var(--accent-green);
+        }
+
+        .actions button:last-child:hover {
+            background-color: #d32f2f;
         }
     </style>
 </head>
 <body>
-<h2>Product Database</h2>
-<button class="add-button" onclick="showPopup()">ADD PRODUCT</button>
-<table>
-    <thead>
-    <tr>
-        <th>Product Name</th>
-        <th>Price</th>
-        <th>Quantity</th>
-        <th>Category</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody id="product-table"></tbody>
-</table>
+<div class="container">
+    <h2>Product Database</h2>
+    <button class="add-button" onclick="showPopup()">ADD PRODUCT</button>
+    <table>
+        <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Category</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="product-table"></tbody>
+    </table>
 
-<div id="popupForm">
-    <h3>Add Product</h3>
-    <input type="text" id="productName" placeholder="Product Name" />
-    <input type="number" id="price" placeholder="Price" />
-    <input type="number" id="quantity" placeholder="Quantity" />
-    <select id="category">
-        <option value="">Select Category</option>
-    </select>
-    <button onclick="addProduct()">Add</button>
-    <button onclick="closePopup()">Cancel</button>
-</div>
+    <div id="popupForm" class="modal">
+        <h3>Add Product</h3>
+        <input type="text" id="productName" placeholder="Product Name" required/>
+        <input type="number" id="price" placeholder="Price" required/>
+        <input type="number" id="quantity" placeholder="Quantity" required/>
+        <select id="category">
+            <option value="">Select Category</option>
+        </select>
+        <button onclick="addProduct()">Add</button>
+        <button onclick="closePopup()">Cancel</button>
+    </div>
 
-<div id="editPopup">
-    <h3>Edit Product</h3>
-    <input type="text" id="editName" placeholder="Product Name" />
-    <input type="number" id="editPrice" placeholder="Price" />
-    <input type="number" id="editQuantity" placeholder="Quantity" />
-    <select id="editCategory">
-        <option value="">Select Category</option>
-    </select>
-    <button onclick="updateProduct()">Update</button>
-    <button onclick="closeEditPopup()">Cancel</button>
+    <div id="editPopup" class="modal">
+        <h3>Edit Product</h3>
+        <input type="text" id="editName" placeholder="Product Name" required/>
+        <input type="number" id="editPrice" placeholder="Price" required/>
+        <input type="number" id="editQuantity" placeholder="Quantity" required/>
+        <select id="editCategory">
+            <option value="">Select Category</option>
+        </select>
+        <button onclick="updateProduct()">Update</button>
+        <button onclick="closeEditPopup()">Cancel</button>
+    </div>
+
+    <button class="dashboard-btn"><a href="../adminDashboard.html">Back to Dashboard</a></button>
 </div>
 
 <script>
