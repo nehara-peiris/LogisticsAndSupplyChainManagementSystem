@@ -12,6 +12,15 @@ Key Features:
 - Report generation and dashboard analytics
 
 ---
+## 🧰 Tech Stack
+
+- **Frontend:** HTML, CSS, Bootstrap, JavaScript
+- **Backend:** Java, Spring Boot
+- **Database:** MySQL
+- **Authentication:** JWT
+- **Tools & Platforms:** Maven, Git, Postman, GitHub
+
+---
 
 ## 🖼️ Screenshots
 
@@ -71,5 +80,14 @@ Watch the system in action:
 👉 **LogisticsSystem_Demo_NeharaPeiris.mp4**
 
 > **[LogisticsSystem_Demo_On Youtube](https://youtu.be/2cKKzdC2Dxg?si=YcY7oe79eCAvE9Gn)**
-   
-   
+
+---
+
+## 📬 Contact
+
+Have questions or feedback?  
+Feel free to reach out:  
+📧 shewmipeiris123@gmail.com 
+
+---
+
