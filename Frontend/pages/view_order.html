@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -208,7 +210,7 @@
             // Status Dropdown
             const statusCell = row.insertCell();
             const select = document.createElement('select');
-            ['PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED'].forEach(status => {
+            ['PENDING', 'PROCESSING', 'COMPLETED', 'DISPATCHED', 'CANCELLED'].forEach(status => {
                 const option = document.createElement('option');
                 option.value = status;
                 option.textContent = status;
@@ -227,8 +229,11 @@
                 try {
                     const success = await updateOrderStatus(order.id, select.value);
                     if (success) {
-                        alert('Status updated successfully');
-                        // Optional: Refresh the orders
+                        Swal.fire({
+                            title: "Status updated successfully!",
+                            icon: "success",
+                            draggable: true
+                        });
                         const orders = await fetchOrders();
                         showOrders(orders);
                     }
@@ -240,9 +245,7 @@
         });
     }
 
-    // Initialize the page with better flow
     window.onload = async function() {
-        // First check auth without loading indicator
         if (!checkAuth()) return;
 
         try {

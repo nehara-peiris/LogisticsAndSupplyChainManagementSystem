@@ -5,138 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* Global Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f7f7f7;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #333;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        /* Form Container */
-        #register-form {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
-        }
-
-        /* Section Titles */
-        h2 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 10px;
-        }
-
-        /* Input and Select Styles */
-        input,
-        select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-            color: #333;
-            background-color: #f9f9f9;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: #3b82f6;
-            outline: none;
-            background-color: #fff;
-        }
-
-        /* Buttons */
-        button {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border: none;
-            margin-top: 20px;
-        }
-
-        #save-btn {
-            background-color: #3b82f6;
-            color: white;
-        }
-
-        #save-btn:hover {
-            background-color: #2563eb;
-        }
-
-        button[type="reset"] {
-            background-color: #d1d5db;
-            color: #333;
-            margin-left: 10px;
-        }
-
-        button[type="reset"]:hover {
-            background-color: #9ca3af;
-        }
-
-        /* Link Styles */
-        a {
-            color: #3b82f6;
-            font-weight: 600;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        a:hover {
-            color: #2563eb;
-        }
-
-        /* Helper Text */
-        p {
-            margin-top: 15px;
-            color: #555;
-            font-size: 1rem;
-        }
-
-        /* Form Input Labels */
-        label {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #555;
-            margin-bottom: 5px;
-        }
-
-        /* Placeholder Styles */
-        input::placeholder {
-            color: #aaa;
-            font-size: 1rem;
-        }
-
-    </style>
+    <link rel="stylesheet" href="css/signup.css">
 </head>
 <body>
 <h1 class="text-center font-bold text-2xl mt-10">Sign Up</h1>
@@ -194,9 +65,8 @@
 <script>
     $(document).ready(function () {
         $('#save-btn').on('click', function (event) {
-            event.preventDefault(); // Prevent form submission
+            event.preventDefault();
 
-            // Collect user data (trim whitespace)
             const user = {
                 email: $('#email').val().trim(),
                 name: $('#name').val().trim(),
@@ -204,25 +74,33 @@
                 role: $('#role').val().trim()
             };
 
-            // **Enhanced Validation**
             if (!user.email || !user.name || !user.password || user.role === "Role") {
-                alert("Please fill all fields correctly!");
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "Please fill all fields correctly!"
+                });
                 return;
             }
 
-            // **Email format validation (basic)**
             if (!/^\S+@\S+\.\S+$/.test(user.email)) {
-                alert("Please enter a valid email address!");
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "Please enter a valid email address!"
+                });
                 return;
             }
 
-            // **Password strength check (optional)**
             if (user.password.length < 8) {
-                alert("Password must be at least 8 characters long!");
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text:"Password must be at least 8 characters long!"
+                });
                 return;
             }
 
-            // **AJAX Request with Error Handling**
             $.ajax({
                 url: `http://localhost:8082/api/v1/user/register`,
                 method: `POST`,
@@ -233,23 +111,23 @@
                 success: function (response) {
                     if (!response || !response.data || !response.data.token) {
                         console.error("Invalid response format:", response);
-                        alert("Registration failed: No token received.");
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text:"Registration failed: No token received!"
+                        });
                         return;
                     }
 
                     const token = response.data.token;
                     console.log("Token:", token);
 
-                    // **Store token securely (only in localStorage OR sessionStorage)**
-                    localStorage.setItem("authToken", token); // Persistent storage
-                    // sessionStorage.setItem("authToken", token); // Session-based storage (choose one)
+                    localStorage.setItem("authToken", token);
 
                     try {
-                        // **Decode JWT to extract role (requires jwt-decode library)**
                         const decodedToken = jwt_decode(token);
-                        const userRole = decodedToken.role?.toUpperCase(); // Ensure uppercase comparison
+                        const userRole = decodedToken.role?.toUpperCase();
 
-                        // **Redirect based on role**
                         switch (userRole) {
                             case 'ADMIN':
                                 window.location.href = "adminDashboard.html";
@@ -258,13 +136,21 @@
                                 window.location.href = "userDashboard.html";
                                 break;
                             default:
-                                alert("Unknown role detected. Redirecting to default page.");
-                                window.location.href = "default.html"; // Fallback
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Oops...",
+                                    text:"Unknown role detected. Redirecting to default page."
+                                });
+                                window.location.href = "default.html";
                         }
                     } catch (decodeError) {
                         console.error("Failed to decode token:", decodeError);
-                        alert("Login successful, but role detection failed.");
-                        window.location.href = "default.html"; // Fallback
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text:"Login successful, but role detection failed."
+                        });
+                        window.location.href = "default.html";
                     }
                 },
                 error: function (xhr, status, error) {

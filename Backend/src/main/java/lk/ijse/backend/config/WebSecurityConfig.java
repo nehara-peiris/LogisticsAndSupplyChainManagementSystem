@@ -78,6 +78,7 @@ public class WebSecurityConfig {
                                 "/api/v1/categories/**",
                                 "/api/v1/products/**",
                                 "/api/v1/orders/**",
+                                "/api/v1/invoices/**",
                                 "/api/v1/customers/**").permitAll()
                         .anyRequest().authenticated()
                 )

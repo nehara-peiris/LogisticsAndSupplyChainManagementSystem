@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice</title>
+    <title>Invoice Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Add to head -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -13,157 +18,453 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #1a1a1a;
-            color: #fff;
+            background-color: #121212;
+            color: #e0e0e0;
             padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 900px;
-            margin: auto;
-            background: #2a2a2a;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        h2 {
+        .header {
             text-align: center;
-            color: #fff;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            color: #4CAF50;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .search-container {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .search-form input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .search-form button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .search-form button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .invoice-container {
+            display: none;
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+            border: 1px solid #333;
+        }
+
+        .invoice-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .invoice-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .print-btn {
+            background-color: #2E7D32;
+            color: white;
+        }
+
+        .print-btn:hover {
+            background-color: #1B5E20;
+            transform: translateY(-2px);
+        }
+
+        .download-btn {
+            background-color: #388E3C;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background-color: #2E7D32;
+            transform: translateY(-2px);
+        }
+
+        .invoice-preview {
+            max-width: 900px;
+            margin: auto;
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+
+        .invoice-preview h2 {
+            text-align: center;
+            color: #4CAF50;
             font-weight: 600;
             margin-bottom: 20px;
+            font-size: 1.8rem;
         }
 
         .invoice-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #444;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
 
         .invoice-info {
             font-size: 16px;
-            color: #ccc;
+            color: #b0b0b0;
         }
 
         .info-container {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            gap: 20px;
         }
 
         .info-box {
             width: 48%;
-            background-color: #333;
-            padding: 15px;
+            background-color: #252525;
+            padding: 20px;
             border-radius: 8px;
+            border-left: 4px solid #4CAF50;
         }
 
         .info-box h3 {
-            margin-bottom: 10px;
-            color: #fff;
+            margin-bottom: 15px;
+            color: #4CAF50;
+            font-size: 1.2rem;
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #333;
-            color: #fff;
+            margin-top: 25px;
+            background-color: #252525;
+            color: #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         th, td {
-            padding: 14px;
+            padding: 15px;
             text-align: center;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid #333;
         }
 
         th {
-            background-color: #007bff;
+            background-color: #2E7D32;
             color: white;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         td {
-            background-color: #2a2a2a;
+            background-color: #2d2d2d;
+        }
+
+        tr:hover td {
+            background-color: #333;
         }
 
         .total {
             text-align: right;
             font-size: 18px;
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #252525;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .total h4 {
+            color: #4CAF50;
+            font-size: 1.3rem;
+        }
+
+        .error-message {
+            color: #f44336;
+            text-align: center;
             margin-top: 20px;
+            padding: 15px;
+            background-color: #1e1e1e;
+            border-radius: 6px;
+            border-left: 4px solid #f44336;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #4CAF50;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner::after {
+            content: "";
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(76, 175, 80, 0.2);
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice-preview, .invoice-preview * {
+                visibility: visible;
+            }
+            .invoice-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                background: white;
+                color: black;
+            }
         }
     </style>
+
 </head>
 <body>
 <div class="container">
-    <div class="invoice-header">
-        <h2>Invoice</h2>
-        <div class="invoice-info">
-            <p>Invoice #: 121212</p>
-            <p>Date: 04/04/2024</p>
-        </div>
+    <div class="header">
+        <h1>Invoice Generator</h1>
     </div>
 
-    <div class="info-container">
-        <div class="info-box">
-            <h3>Company Info</h3>
-            <p>Street, City, Zip Code, State, Country</p>
-            <p>Phone: 111-111-111</p>
-        </div>
-        <div class="info-box">
-            <h3>Customer Info</h3>
-            <p>Street, City, Zip Code, State, Country</p>
-        </div>
+    <div class="search-container">
+        <form class="search-form" id="searchForm">
+            <input type="text" id="orderId" placeholder="Enter Order ID" required>
+            <button type="submit">Generate Invoice</button>
+        </form>
     </div>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Product</th>
-            <th>Description</th>
-            <th>Discount</th>
-            <th>Total</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>1</td>
-            <td>google.com</td>
-            <td>1 year domain registration</td>
-            <td>---</td>
-            <td>$10</td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>yahoo.com</td>
-            <td>5 year domain registration</td>
-            <td>5%</td>
-            <td>$45</td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Hosting</td>
-            <td>1 year basic hosting</td>
-            <td>10%</td>
-            <td>$90</td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Design</td>
-            <td>Theme customization</td>
-            <td>50%</td>
-            <td>$250</td>
-        </tr>
-        </tbody>
-    </table>
+    <div id="errorMessage" class="error-message"></div>
 
-    <div class="total">
-        <h4>Total amount: <span class="red">$395</span></h4>
+    <div class="invoice-container" id="invoiceContainer">
+        <div class="invoice-actions">
+            <button class="print-btn" id="printBtn">Print Invoice</button>
+            <button class="download-btn" id="downloadBtn">Download as PDF</button>
+        </div>
+
+        <div class="invoice-preview" id="invoicePreview">
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('searchForm');
+        const orderIdInput = document.getElementById('orderId');
+        const invoiceContainer = document.getElementById('invoiceContainer');
+        const invoicePreview = document.getElementById('invoicePreview');
+        const errorMessage = document.getElementById('errorMessage');
+        const printBtn = document.getElementById('printBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Print functionality
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Download as PDF
+        downloadBtn.addEventListener('click', function() {
+            const element = document.getElementById('invoicePreview');
+            const orderId = orderIdInput.value.trim();
+
+            // Show loading state
+            const originalText = downloadBtn.textContent;
+            downloadBtn.textContent = 'Generating PDF...';
+            downloadBtn.disabled = true;
+
+            html2canvas(element, {
+                scale: 2, // Higher quality
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`invoice_${orderId}.pdf`);
+
+                // Restore button state
+                downloadBtn.textContent = originalText;
+                downloadBtn.disabled = false;
+            }).catch(error => {
+                console.error('PDF generation error:', error);
+                showError('Failed to generate PDF');
+                downloadBtn.textContent = originalText;
+                downloadBtn.disabled = false;
+            });
+        });
+
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const orderId = orderIdInput.value.trim();
+
+            if (!orderId) {
+                showError('Please enter an Order ID');
+                return;
+            }
+
+            fetchInvoice(orderId);
+        });
+
+        function fetchInvoice(orderId) {
+            // Show loading state
+            invoicePreview.innerHTML = '<div class="loading-spinner">Loading invoice...</div>';
+            invoiceContainer.style.display = 'block';
+            errorMessage.textContent = '';
+
+            // Get token from localStorage
+            const authToken = localStorage.getItem('authToken');
+
+            if (!authToken) {
+                showError('Authentication required. Please login first.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            fetch(`http://localhost:8082/api/v1/invoices/${orderId}/html`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Accept': 'text/html'
+                }
+            })
+                .then(async response => {
+                    if (!response.ok) {
+                        const error = await response.text();
+                        throw new Error(error || `HTTP ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    invoicePreview.innerHTML = html;
+                    errorMessage.textContent = '';
+                })
+                .catch(error => {
+                    showError(error.message.includes('not found') ?
+                        'Invoice not found' :
+                        'Failed to load invoice. Please try again.');
+                    invoiceContainer.style.display = 'none';
+
+                    if (error.message.includes('401')) {
+                        localStorage.removeItem('authToken');
+                        window.location.href = '/login.html';
+                    }
+                });
+        }
+
+        function showError(message) {
+            errorMessage.innerHTML = message;
+            errorMessage.style.display = 'block';
+
+            // More detailed error handling
+            if (message.includes('401')) {
+                errorMessage.innerHTML += '<br>Redirecting to login...';
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+            } else if (message.includes('500')) {
+                errorMessage.innerHTML += '<br>Please contact support if the problem persists';
+            }
+
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+    });
+</script>
+
+<script>
+    downloadBtn.addEventListener('click', function() {
+        const element = document.getElementById('invoicePreview');
+
+        html2canvas(element).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jspdf.jsPDF();
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`invoice_${orderIdInput.value.trim()}.pdf`);
+        });
+    });
+
+    printBtn.addEventListener('click', function() {
+        window.print();
+    });
+</script>
 </body>
 </html>

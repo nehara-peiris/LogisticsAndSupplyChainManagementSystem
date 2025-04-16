@@ -8,5 +8,6 @@
     <orderEntry type="library" name="vue" level="application" />
     <orderEntry type="library" name="vue-router" level="application" />
     <orderEntry type="library" name="jwt-decode" level="application" />
+    <orderEntry type="library" name="payhere" level="application" />
   </component>
 </module>

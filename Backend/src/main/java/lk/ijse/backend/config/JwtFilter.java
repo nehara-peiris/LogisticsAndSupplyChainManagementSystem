@@ -77,7 +77,8 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/v1/categories",
             "/api/v1/products",
             "/api/v1/orders",
-            "/api/v1/customers"
+            "/api/v1/customers",
+            "/api/v1/invoices"
     );
 
     private boolean isPublicEndpoint(String path) {

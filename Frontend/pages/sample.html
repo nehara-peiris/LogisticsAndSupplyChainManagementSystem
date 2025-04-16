@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .payment-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .business-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .business-tag {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2ecc71;
+            margin: 20px 0;
+        }
+
+        .status-message {
+            font-size: 18px;
+            color: #2ecc71;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .detail-message {
+            font-size: 14px;
+            color: #666;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #999;
+            margin-top: 30px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+<div class="payment-card">
+    <div class="business-name">YOUR BUSINESS</div>
+    <div class="business-tag">Demo Business</div>
+
+    <div class="logo-placeholder">LOGO</div>
+
+    <div class="amount">Rs. 3,000.00</div>
+
+    <div class="status-message">Payment Successful!</div>
+
+    <div class="detail-message">
+        Your payment has been processed successfully.
+        <br>A receipt has been sent to your email.
+    </div>
+
+    <button class="btn">Done</button>
+
+    <div class="footer">
+        PayHere is a Central Bank approved Secure Payment Gateway Service
+    </div>
+</div>
+</body>
+</html>

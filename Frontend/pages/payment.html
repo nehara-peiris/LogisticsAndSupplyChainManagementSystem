@@ -2,9 +2,393 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Payments</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* PayHere specific styles */
+        .payment-method[data-method^="payhere"] {
+            border-left: 4px solid #6c3e93;
+        }
+
+        .payment-method[data-method="payhere"].active {
+            background-color: #f3e9ff;
+        }
+
+        .payment-method[data-method="payhere-card"].active {
+            background-color: #e9f0ff;
+        }
+
+        .payment-method[data-method="payhere-mobile"].active {
+            background-color: #e9ffe9;
+        }
+
+        /* Card input styling */
+        #cardNumber {
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+
+        /* Mobile payment styling */
+        #mobileNetwork {
+            background-image: url("data:image/svg+xml,%3csvg...");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+
+        /* PayHere button styling */
+        .btn-payhere {
+            background-color: #6c3e93;
+            color: white;
+            border: none;
+        }
+
+        .btn-payhere:hover {
+            background-color: #5a3280;
+            color: white;
+        }
+    </style>
 </head>
 <body>
+<div class="payment-options">
+    <h3>Select Payment Method</h3>
 
+    <div class="payment-methods">
+        <!-- PayHere Checkout (Default) -->
+        <div class="payment-method active" data-method="payhere">
+            <i class="bi bi-wallet2"></i>
+            <span>PayHere Checkout</span>
+        </div>
+
+        <!-- PayHere Card Payments -->
+        <div class="payment-method" data-method="payhere-card">
+            <i class="bi bi-credit-card"></i>
+            <span>Credit/Debit Card</span>
+        </div>
+
+        <!-- PayHere Mobile Payments -->
+        <div class="payment-method" data-method="payhere-mobile">
+            <i class="bi bi-phone"></i>
+            <span>Mobile Payments</span>
+        </div>
+    </div>
+</div>
+
+<!-- PayHere Checkout Form -->
+<div class="payment-form" id="payhere-form">
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> You'll be redirected to PayHere's secure payment page
+    </div>
+    <button id="proceedToPayhere" class="btn btn-warning w-100">
+        <i class="bi bi-lock"></i> Proceed to Secure Payment
+    </button>
+</div>
+
+<!-- PayHere Card Form (Hidden) -->
+<div class="payment-form d-none" id="payhere-card-form">
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> Sandbox test cards:
+        <ul class="mt-2">
+            <li>Card: <strong>4242 4242 4242 4242</strong></li>
+            <li>Expiry: <strong>Any future date</strong></li>
+            <li>CVV: <strong>123</strong></li>
+        </ul>
+    </div>
+
+    <form id="payhereCardForm">
+        <div class="form-group">
+            <label>Card Number</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="cardNumber" placeholder="4242 4242 4242 4242" required>
+                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Expiry Date</label>
+                <input type="text" class="form-control" id="cardExpiry" placeholder="MM/YY" required>
+            </div>
+            <div class="col-md-6">
+                <label>CVV</label>
+                <input type="text" class="form-control" id="cardCvv" placeholder="123" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">
+            <i class="bi bi-lock"></i> Pay with Card
+        </button>
+    </form>
+</div>
+
+<!-- PayHere Mobile Form (Hidden) -->
+<div class="payment-form d-none" id="payhere-mobile-form">
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> Sandbox test numbers:
+        <ul class="mt-2">
+            <li>Dialog: <strong>94771234567</strong></li>
+            <li>Hutch: <strong>94771234567</strong></li>
+        </ul>
+    </div>
+
+    <form id="payhereMobileForm">
+        <div class="form-group">
+            <label>Mobile Network</label>
+            <select class="form-select" id="mobileNetwork" required>
+                <option value="">Select network</option>
+                <option value="dialog">Dialog eZ Cash</option>
+                <option value="hutch">Hutch</option>
+                <option value="mobitel">Mobitel mCash</option>
+            </select>
+        </div>
+
+        <div class="form-group mt-3">
+            <label>Mobile Number</label>
+            <div class="input-group">
+                <span class="input-group-text">+94</span>
+                <input type="tel" class="form-control" id="mobileNumber" placeholder="771234567" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">
+            <i class="bi bi-phone"></i> Pay with Mobile
+        </button>
+    </form>
+</div>
+
+<!-- Hidden PayHere Form -->
+<form id="payhere-payment-form" method="post" action="https://sandbox.payhere.lk/pay/checkout">
+    <input type="hidden" name="merchant_id" value="1230127"> <!-- Sandbox ID -->
+    <input type="hidden" name="return_url" value="http://yourdomain.com/payment/return">
+    <input type="hidden" name="cancel_url" value="http://yourdomain.com/payment/cancel">
+    <input type="hidden" name="notify_url" value="http://yourdomain.com/payment/notify">
+    <input type="hidden" name="order_id" id="payhere-order-id">
+    <input type="hidden" name="items" id="payhere-items">
+    <input type="hidden" name="currency" value="LKR">
+    <input type="hidden" name="amount" id="payhere-amount">
+    <input type="hidden" name="first_name" id="payhere-first-name">
+    <input type="hidden" name="last_name" id="payhere-last-name">
+    <input type="hidden" name="email" id="payhere-email">
+    <input type="hidden" name="phone" id="payhere-phone">
+    <input type="hidden" name="address" id="payhere-address">
+    <input type="hidden" name="city" id="payhere-city">
+    <input type="hidden" name="country" value="Sri Lanka">
+    <input type="hidden" name="hash" id="payhere-hash">
+    <!-- For card payments -->
+    <input type="hidden" name="payment_method" id="payhere-payment-method">
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                this.classList.add('active');
+
+                const method = this.dataset.method;
+                document.querySelectorAll('.payment-form').forEach(form => form.classList.add('d-none'));
+                document.getElementById(`${method}-form`).classList.remove('d-none');
+            });
+        });
+
+        // Initialize PayHere payment
+        document.getElementById('proceedToPayhere').addEventListener('click', initiatePayHereCheckout);
+
+        // Card form submission
+        document.getElementById('payhereCardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            processCardPayment();
+        });
+
+        // Mobile form submission
+        document.getElementById('payhereMobileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            processMobilePayment();
+        });
+    });
+
+    // Initialize PayHere Checkout
+    async function initiatePayHereCheckout() {
+        try {
+            showLoading('Preparing payment...');
+
+            // Generate order details
+            const orderId = `ORD-${Date.now()}`;
+            const amount = calculateTotalAmount();
+            const items = getCartItemsDescription();
+
+            // Get payment hash from backend
+            const { hash } = await fetchPaymentHash(orderId, amount);
+
+            // Set form values
+            document.getElementById('payhere-order-id').value = orderId;
+            document.getElementById('payhere-amount').value = amount.toFixed(2);
+            document.getElementById('payhere-items').value = items;
+            document.getElementById('payhere-hash').value = hash;
+
+            // Set customer details
+            setCustomerDetails();
+
+            // Submit form
+            document.getElementById('payhere-payment-form').submit();
+        } catch (error) {
+            showError(`Payment initialization failed: ${error.message}`);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // Process card payment through PayHere
+    async function processCardPayment() {
+        try {
+            showLoading('Processing card payment...');
+
+            // Validate card
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const cardExpiry = document.getElementById('cardExpiry').value;
+            const cardCvv = document.getElementById('cardCvv').value;
+
+            if (!validateCard(cardNumber, cardExpiry, cardCvv)) {
+                throw new Error('Invalid card details');
+            }
+
+            // Generate order details
+            const orderId = `ORDC-${Date.now()}`;
+            const amount = calculateTotalAmount();
+            const items = getCartItemsDescription();
+
+            // Get payment hash
+            const { hash } = await fetchPaymentHash(orderId, amount);
+
+            // Set form values for card payment
+            document.getElementById('payhere-order-id').value = orderId;
+            document.getElementById('payhere-amount').value = amount.toFixed(2);
+            document.getElementById('payhere-items').value = items;
+            document.getElementById('payhere-hash').value = hash;
+            document.getElementById('payhere-payment-method').value = 'VISA'; // or 'MASTER'
+
+            // Set customer details
+            setCustomerDetails();
+
+            // Submit form
+            document.getElementById('payhere-payment-form').submit();
+        } catch (error) {
+            showError(`Card payment failed: ${error.message}`);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // Process mobile payment through PayHere
+    async function processMobilePayment() {
+        try {
+            showLoading('Processing mobile payment...');
+
+            // Get mobile details
+            const network = document.getElementById('mobileNetwork').value;
+            const number = document.getElementById('mobileNumber').value;
+
+            if (!network || !number) {
+                throw new Error('Please provide mobile details');
+            }
+
+            // Generate order details
+            const orderId = `ORDM-${Date.now()}`;
+            const amount = calculateTotalAmount();
+            const items = getCartItemsDescription();
+
+            // Get payment hash
+            const { hash } = await fetchPaymentHash(orderId, amount);
+
+            // Set form values for mobile payment
+            document.getElementById('payhere-order-id').value = orderId;
+            document.getElementById('payhere-amount').value = amount.toFixed(2);
+            document.getElementById('payhere-items').value = items;
+            document.getElementById('payhere-hash').value = hash;
+            document.getElementById('payhere-payment-method').value = network.toUpperCase();
+            document.getElementById('payhere-phone').value = `94${number}`;
+
+            // Set other customer details
+            setCustomerDetails();
+
+            // Submit form
+            document.getElementById('payhere-payment-form').submit();
+        } catch (error) {
+            showError(`Mobile payment failed: ${error.message}`);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // Helper Functions
+    async function fetchPaymentHash(orderId, amount) {
+        const response = await fetch('http://localhost:8082/api/v1/payment/hash', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                amount: amount,
+                currency: 'LKR'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get payment hash');
+        }
+
+        return await response.json();
+    }
+
+    function setCustomerDetails() {
+        // Get these from your user data
+        document.getElementById('payhere-first-name').value = 'Sandbox';
+        document.getElementById('payhere-last-name').value = 'User';
+        document.getElementById('payhere-email').value = 'sandbox@example.com';
+        document.getElementById('payhere-address').value = '123 Test Street';
+        document.getElementById('payhere-city').value = 'Colombo';
+    }
+
+    function validateCard(number, expiry, cvv) {
+        // Basic validation for sandbox
+        return number.length >= 16 &&
+            expiry.match(/^\d{2}\/\d{2}$/) &&
+            cvv.length >= 3;
+    }
+
+    function calculateTotalAmount() {
+        // Implement your cart total calculation
+        return 1000.00; // Example for sandbox
+    }
+
+    function getCartItemsDescription() {
+        // Return items description
+        return 'Test Product 1, Test Product 2';
+    }
+
+    function showLoading(message) {
+        Swal.fire({
+            title: message,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+    }
+
+    function hideLoading() {
+        Swal.close();
+    }
+
+    function showError(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Error',
+            text: message
+        });
+    }
+</script>
 </body>
 </html>

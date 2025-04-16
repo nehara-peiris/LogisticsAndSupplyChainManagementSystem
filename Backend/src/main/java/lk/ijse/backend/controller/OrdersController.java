@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -79,6 +81,31 @@ public class OrdersController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to update order status: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/track/{orderId}")
+    public ResponseEntity<?> trackOrder(@PathVariable Long orderId) {
+        try {
+            Orders order = orderService.getOrderById(orderId);
+            if (order == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Map<String, Object> trackingInfo = new HashMap<>();
+            trackingInfo.put("id", order.getId());
+            trackingInfo.put("status", order.getStatus());
+            trackingInfo.put("orderDate", order.getOrderDate());
+
+            if (order.getShipment() != null) {
+                trackingInfo.put("trackingNumber", order.getShipment().getTrackingNumber());
+                trackingInfo.put("estimatedDelivery", order.getShipment().getDeliveryDate());
+            }
+
+            return ResponseEntity.ok(trackingInfo);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch order tracking info: " + e.getMessage());
         }
     }
 }
