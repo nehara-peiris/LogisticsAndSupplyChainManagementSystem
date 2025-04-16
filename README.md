@@ -68,9 +68,8 @@ Make sure the following tools are installed:
 ## 🎬 Demo Video
 
 Watch the system in action:  
-👉 **LogisticsSystem_Demo_YourName_StudentID.mp4**
+👉 **LogisticsSystem_Demo_NeharaPeiris.mp4**
 
-> **Note:** Make sure your demo video is named using the format:  
-> **LogisticsSystem_Demo_YourName_StudentID.mp4**
+> **[LogisticsSystem_Demo_On Youtube](https://youtu.be/2cKKzdC2Dxg?si=YcY7oe79eCAvE9Gn)**
    
    
